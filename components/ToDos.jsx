@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View, StatusBar } from 'react-native'
 import React, { useState } from 'react'
 import Header from '../toDos/Header'
 import ToDoLists from '../toDos/ToDoLists';
@@ -26,6 +26,7 @@ const ToDos = () => {
             <View style={styles.listBody}>
                 <ToDoLists tasks={tasks} setTasks={setTasks} />
             </View>
+            <StatusBar backgroundColor={'#efabab'} />
         </View>
     );
 }
@@ -45,7 +46,9 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     listBody: {
-        height: '89%',
+        flex: 1,
+        borderRadius: 10,
+        marginVertical: 10,
         paddingVertical: 10
     }
 })

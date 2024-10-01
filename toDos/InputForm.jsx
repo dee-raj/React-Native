@@ -1,6 +1,14 @@
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import {
+    Alert,
+    Keyboard,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View
+} from 'react-native'
 import React, { useState } from 'react'
-import { Picker } from 'react-native-web';
+import { Picker } from '@react-native-picker/picker';
 
 
 const InputForm = ({ setTasks }) => {
@@ -9,15 +17,26 @@ const InputForm = ({ setTasks }) => {
     const days = ['sun', 'mon', 'tue', 'wed', 'thus', 'fri', 'sat'];
     const [isRept, setIsRept] = useState(false);
 
+    const keyboradHandler = () => {
+        Keyboard.dismiss();
+        console.log(`Dismissed keybord.`);
+    };
+
     const handleAddTasks = () => {
-        if (title.length > 3) {
-            const newTask = { id: Math.random() * 10, title: title, setFor: selectedValue, isRepeat: isRept };
+        const inputTitle = title.trim();
+        if (inputTitle.length > 3) {
+            const newTask = {
+                id: Math.random() * 10,
+                title: title,
+                setFor: selectedValue,
+                isRepeat: isRept
+            };
             setTasks((prevTasks) => {
                 return [newTask, ...prevTasks];
             });
             console.log(`Your new Task:`, newTask);
         } else {
-            Alert.alert("Kay Bolya bhai..?", "The task should be at least 3 char long.", [
+            Alert.alert("Kya Bolya bhau...?", "The task should be at least 3 character long.", [
                 { text: 'Ok', onPress: () => console.log('alert closed.') }
             ]);
         }
@@ -40,9 +59,10 @@ const InputForm = ({ setTasks }) => {
                 value={title}
                 onChangeText={(text) => setTitle(text)}
                 style={[styles.inputBox, { width: '45%' }]}
+                onBlur={() => keyboradHandler()}
             />
             <Picker
-                style={[styles.inputBox, { textTransform: 'capitalize' }]}
+                style={[styles.inputBox, { width: 120 }]}
                 selectedValue={selectedValue}
                 onValueChange={(val) => setSelectedValue(val)}>
                 {days.map((d) => (
@@ -80,7 +100,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#867586',
         color: '#fdefde',
         fontSize: 24,
-        cursor:'pointer'
+        cursor: 'pointer'
     },
     btn: {
         marginTop: 10,

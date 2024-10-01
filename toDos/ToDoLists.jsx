@@ -1,5 +1,6 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
+import { MaterialIcons } from '@expo/vector-icons'
 
 const ToDoLists = ({ tasks, setTasks }) => {
     const handleCompletion = (id) => {
@@ -13,7 +14,9 @@ const ToDoLists = ({ tasks, setTasks }) => {
             keyExtractor={(item) => item.id}
             data={tasks}
             renderItem={({ item }) => (
-                <View style={[styles.taskBody, { backgroundColor: item.isRepeat ? '#56f3f9' : 'grey' }]}>
+                <View style={[styles.taskBody, {
+                    backgroundColor: item.isRepeat ? '#56f3f9' : 'grey',
+                }]}>
                     <Text
                         style={[styles.textStyle,
                         { color: !item.isRepeat ? '#fefefe' : '#123987' }]}
@@ -28,7 +31,10 @@ const ToDoLists = ({ tasks, setTasks }) => {
                         style={styles.btnStyle}
                         onPress={() => handleCompletion(item.id)}
                     >
-                        <Text style={styles.textStyle}>complete</Text>
+                        <View style={styles.item}>
+                            <MaterialIcons name='delete' size={24} color={'#911'} />
+                            <Text style={styles.itemStyleText}>done</Text>
+                        </View>
                     </Pressable>
                 </View>
             )}
@@ -42,32 +48,42 @@ export default ToDoLists
 const styles = StyleSheet.create({
     listBox: {
         backgroundColor: '#b9bc9c',
-        paddingVertical: 30,
+        paddingVertical: 10,
         paddingHorizontal: 5,
         flexDirection: 'column',
     },
     taskBody: {
+        flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-evenly',
+        justifyContent: 'space-between',
         alignItems: 'center',
         textAlign: 'center',
         paddingVertical: 15,
         marginVertical: 20,
         paddingHorizontal: 5,
-        borderRadius: 23
+        borderRadius: 10
     },
     textStyle: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: '600',
         color: 'white',
         textTransform: 'capitalize'
     },
     btnStyle: {
         backgroundColor: 'green',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
+        padding: 5,
+        borderRadius: 10,
+        marginHorizontal: 5,
+    },
+    item: {
+        flex: 1,
+        flexDirection: 'row-reverse',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 10
+    },
+    itemStyleText: {
+        paddingLeft: 10,
+        fontSize: 16,
+        color: '#FFABAB'
     }
 })
