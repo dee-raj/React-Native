@@ -9,9 +9,30 @@ const Stack = createStackNavigator();
 const AppNavigator = () => {
     return (
         <NavigationContainer>
-            <Stack.Navigator initialRouteName="Home">
-                <Stack.Screen name="Home" component={HomePage} />
-                <Stack.Screen name="Review" component={ReviewDetails} />
+            <Stack.Navigator
+                initialRouteName="Home"
+                screenOptions={{
+                    headerStyle: {
+                        backgroundColor: '#546A98', // Header background color
+                    },
+                    headerTintColor: '#fff', // Header text color
+                    headerTitleStyle: {
+                        fontWeight: 'bold', // Header title style
+                        fontFamily: 'nunito-Bold'
+                    },
+                    headerTitleAlign: 'center', // Center the title
+                }}
+            >
+                <Stack.Screen
+                    name="Home"
+                    component={HomePage}
+                    options={{ title: 'Review Group' }} // Title for the Home screen
+                />
+                <Stack.Screen
+                    name="Review"
+                    component={ReviewDetails}
+                    options={{ title: 'Review Details' }} // Title for the Review screen
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );
