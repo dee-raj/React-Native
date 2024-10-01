@@ -1,20 +1,30 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import AppNavigator from './routes/homeStack';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+  const [loaded, error] = useFonts({
+    'nunito-Black': require('./assets/fonts/Nunito-Black.ttf'),
+    'nunito-Bold': require('./assets/fonts/Nunito-Bold.ttf'),
+    'nunito-Medium': require('./assets/fonts/Nunito-Medium.ttf'),
+    'nunito-Regular': require('./assets/fonts/Nunito-Regular.ttf'),
+    'nunito-SemiBold': require('./assets/fonts/Nunito-SemiBold.ttf')
+  });
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  useEffect(() => {
+    if (loaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  if (!loaded && !error) {
+    return null;
+  }
+  return (
+    <AppNavigator />
+  );
+
+}
