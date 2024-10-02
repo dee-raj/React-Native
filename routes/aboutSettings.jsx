@@ -1,11 +1,12 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomePage from '../screens/HomePage';
-import ReviewDetails from '../screens/ReviewDetails';
+import AboutPage from '../screens/AboutPage';
+import SettingsPage from '../screens/SettingsPage';
 
 const Stack = createStackNavigator();
 
-const AppNavigator = () => {
+const AboutSettings = () => {
     return (
         <Stack.Navigator
             initialRouteName="Home"
@@ -27,12 +28,17 @@ const AppNavigator = () => {
                 options={{ title: 'Review Group' }}
             />
             <Stack.Screen
-                name="Review"
-                component={ReviewDetails}
-                options={{ title: 'Review Details' }}
+                name="About"
+                component={AboutPage}
+                options={{ title: 'About Page' }}
+            />
+            <Stack.Screen
+                name="Settings"
+                component={SettingsPage}
+                options={{ title: 'Settings Page' }}
             />
         </Stack.Navigator>
     );
 };
 
-export default AppNavigator;
+export default AboutSettings;

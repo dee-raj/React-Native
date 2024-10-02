@@ -1,6 +1,5 @@
 import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import React from 'react';
-import { globalstyles } from '../style/GlobalStyle';
 
 const ReviewDetails = ({ route }) => {
     const { review, title, rating, reviewer, date } = route.params || {};

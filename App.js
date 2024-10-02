@@ -1,7 +1,7 @@
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import AppNavigator from './routes/homeStack';
+import RootDrawerNavigation from './routes/drawer'
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,7 +24,7 @@ export default function App() {
     return null;
   }
   return (
-    <AppNavigator />
+    <RootDrawerNavigation />
   );
 
 }
