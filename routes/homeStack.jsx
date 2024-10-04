@@ -13,10 +13,10 @@ const AppNavigator = () => {
                 headerStyle: {
                     backgroundColor: '#546A98',
                 },
-                headerTintColor: '#fff',
+                headerTintColor: '#FABFAB',
                 headerTitleStyle: {
-                    fontWeight: 'bold',
-                    fontFamily: 'nunito-Bold'
+                    fontWeight: '700',
+                    fontFamily: 'nunito-Bold',
                 },
                 headerTitleAlign: 'center',
             }}
@@ -24,7 +24,7 @@ const AppNavigator = () => {
             <Stack.Screen
                 name="Home"
                 component={HomePage}
-                options={{ title: 'Review Group' }}
+                options={{ title: 'Review Group', headerShown: false }}
             />
             <Stack.Screen
                 name="Review"

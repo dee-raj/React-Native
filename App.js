@@ -2,6 +2,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import RootDrawerNavigation from './routes/drawer'
+import { ReviewsProvider } from './shared/ReviewsData';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,7 +25,9 @@ export default function App() {
     return null;
   }
   return (
-    <RootDrawerNavigation />
+    <ReviewsProvider>
+      <RootDrawerNavigation />
+    </ReviewsProvider>
   );
 
 }
