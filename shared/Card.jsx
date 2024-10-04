@@ -22,9 +22,11 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 1, height: 2 },
         shadowOpacity: 0.5,
         shadowRadius: 4,
+        width: "99%",
     },
     cardContainer: {
         marginHorizontal: 20,
         marginVertical: 10,
+        paddingVertical: 8
     },
 })

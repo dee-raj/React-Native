@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { MaterialIcons } from '@expo/vector-icons'
-import { Image, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { MyImages } from '../style/GlobalStyle';
 import { StyleSheet } from 'react-native';
+import { ModelContext } from '../shared/ReviewsData';
 
 const DrawerIcon = ({ name, focused }) => {
     return (
@@ -26,6 +27,20 @@ export const LogoImage = ({ title_one, title_two }) => {
     )
 }
 
+
+export const ToggleBtn = ({ name, text }) => {
+    const { modelOpen, setModelOpen } = useContext(ModelContext);
+    return (
+        <Pressable
+            style={styles.openBtn}
+            onPress={() => setModelOpen(!modelOpen)}
+        >
+            <Text style={styles.textStyle}>{text}</Text>
+            <MaterialIcons name={name} size={24} color={'#898565'} />
+        </Pressable>
+    )
+}
+
 const styles = StyleSheet.create({
     headerStyle: {
         flexDirection: 'row',
@@ -39,5 +54,27 @@ const styles = StyleSheet.create({
     imgStyle: {
         opacity: 0.4,
         borderRadius: 20
+    }
+    ,
+    openBtn: {
+        backgroundColor: '#ACFEDB',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        paddingVertical: 10,
+        borderRadius: 10,
+        shadowOffset: { width: 2, height: 3 },
+        shadowColor: "#789134",
+        shadowOpacity: 0.7,
+        shadowRadius: 10,
+        marginVertical: 5,
+        elevation: 5,
+        width: '100%'
+    },
+    textStyle: {
+        fontWeight: '700',
+        fontStyle: 'italic',
+        fontSize: 24,
+        color: '#967474',
     }
 })

@@ -40,7 +40,6 @@ function RootDrawerNavigation() {
                         fontSize: 16,
                         color: '#911',
                         fontWeight: '600',
-                        fontFamily: 'nanito-Black'
                     },
                     drawerActiveTintColor: '#007bff',
                     drawerInactiveTintColor: '#FA7800',
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         marginBottom: 20,
         color: '#333',
-        fontFamily: 'nanito-Medium'
+        fontFamily:'Roboto'
     },
 });
 

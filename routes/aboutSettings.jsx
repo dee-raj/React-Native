@@ -17,7 +17,7 @@ const AboutSettings = () => {
                 headerTintColor: '#fff',
                 headerTitleStyle: {
                     fontWeight: 'bold',
-                    fontFamily: 'nunito-Bold'
+                    fontFamily: 'Roboto'
                 },
                 headerTitleAlign: 'center',
             }}

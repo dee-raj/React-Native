@@ -14,15 +14,20 @@ export const globalstyles = StyleSheet.create({
         fontWeight: 'bold',
     },
     Btn: {
-        backgroundColor: '#54CA98',
+        backgroundColor: '#ACFEDB',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 10,
         borderRadius: 10,
-        padding: 15,
-        marginVertical: 10,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
+        shadowOffset: { width: 2, height: 3 },
+        shadowColor: "#789134",
+        shadowOpacity: 0.7,
+        shadowRadius: 10,
+        marginVertical: 5,
+        elevation: 5,
+        marginHorizontal: 10,
+        paddingHorizontal: 10
     },
 });
 
