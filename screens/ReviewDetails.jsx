@@ -3,7 +3,7 @@ import {
     View,
     StyleSheet,
     ScrollView,
-    Image
+    Image,
 } from 'react-native';
 import React from 'react';
 import Card from '../shared/Card';
@@ -19,8 +19,15 @@ const ReviewDetails = ({ route }) => {
         else if (rating <= 6) return MyImages.ratings[3];
         else if (rating <= 8) return MyImages.ratings[4];
         else return MyImages.ratings[5];
-    }
+    };
 
+    if (!title || !review) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.errorText}>Review details are not available.</Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -31,7 +38,9 @@ const ReviewDetails = ({ route }) => {
                         <Text style={styles.rating}>Rating: {rating ? `${rating}/10` : 'N/A'}</Text>
                         <Image
                             source={getImg(Math.round(rating))}
-                            style={{ resizeMode: "contain" }}
+                            style={styles.ratingImage}
+                            accessible={true}
+                            accessibilityLabel={`Rating image for ${rating} out of 10`}
                         />
                     </View>
                     <Text style={styles.reviewer}>Reviewed by: {reviewer}</Text>
@@ -49,7 +58,7 @@ const ReviewDetails = ({ route }) => {
             </Card>
         </ScrollView>
     );
-}
+};
 
 export default ReviewDetails;
 
@@ -64,7 +73,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
-        elevation: 2, // Shadow effect
+        elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
@@ -74,7 +83,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 8,
-        color: '#333', // Darker text for better contrast
+        color: '#333',
     },
     ratingBox: {
         flexDirection: 'row',
@@ -83,8 +92,13 @@ const styles = StyleSheet.create({
     },
     rating: {
         fontSize: 18,
-        color: '#FFD700', // Gold color for rating
-        marginRight: 8, // Spacing between text and image
+        color: '#FFD700',
+        marginRight: 8,
+    },
+    ratingImage: {
+        width: 95,
+        height: 35,
+        resizeMode: 'contain',
     },
     reviewer: {
         fontSize: 16,
@@ -94,7 +108,7 @@ const styles = StyleSheet.create({
     },
     date: {
         fontSize: 14,
-        color: '#888', // Gray color for date
+        color: '#888',
         marginBottom: 12,
     },
     reviewContainer: {
@@ -131,5 +145,11 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontStyle: 'italic',
         color: '#555',
+    },
+    errorText: {
+        fontSize: 16,
+        color: 'red',
+        textAlign: 'center',
+        marginTop: 20,
     },
 });

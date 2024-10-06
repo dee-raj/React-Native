@@ -1,36 +1,53 @@
 import { StyleSheet } from 'react-native';
 
+const Colors = {
+    primary: '#FACAF7',
+    secondary: '#ACFEDB',
+    textDark: '#333',
+    error: '#fe0134',
+    backgroundError: '#ffe6e6',
+    shadowColor: '#789134',
+};
+
 export const globalstyles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#FACAF7',
-        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+        backgroundColor: Colors.primary,
     },
     textStyle: {
-        color: '#333',
+        color: Colors.textDark,
         fontSize: 18,
         textAlign: 'center',
         fontWeight: 'bold',
     },
     Btn: {
-        backgroundColor: '#ACFEDB',
+        backgroundColor: Colors.secondary,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 10,
         borderRadius: 10,
         shadowOffset: { width: 2, height: 3 },
-        shadowColor: "#789134",
+        shadowColor: Colors.shadowColor,
         shadowOpacity: 0.7,
         shadowRadius: 10,
         marginVertical: 5,
         elevation: 5,
         marginHorizontal: 10,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+    },
+    errorStyle: {
+        textAlign: 'center',
+        color: Colors.error,
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginTop: 5,
+        padding: 5,
+        backgroundColor: Colors.backgroundError,
+        borderRadius: 3,
     },
 });
-
 
 export const MyImages = {
     ratings: {
@@ -38,7 +55,7 @@ export const MyImages = {
         '2': require('../assets/rate2.png'),
         '3': require('../assets/rate3.png'),
         '4': require('../assets/rate4.png'),
-        '5': require('../assets/rate5.png')
+        '5': require('../assets/rate5.png'),
     },
     heart: require('../assets/heart.png'),
 };

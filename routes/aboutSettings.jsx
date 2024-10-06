@@ -1,5 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; // Ensure you have @expo/vector-icons installed
 import HomePage from '../screens/HomePage';
 import AboutPage from '../screens/AboutPage';
 import SettingsPage from '../screens/SettingsPage';
@@ -17,7 +19,7 @@ const AboutSettings = () => {
                 headerTintColor: '#fff',
                 headerTitleStyle: {
                     fontWeight: 'bold',
-                    fontFamily: 'Roboto'
+                    fontFamily: 'Roboto',
                 },
                 headerTitleAlign: 'center',
             }}
@@ -25,7 +27,17 @@ const AboutSettings = () => {
             <Stack.Screen
                 name="Home"
                 component={HomePage}
-                options={{ title: 'Review Group' }}
+                options={({ navigation }) => ({
+                    title: 'Review Group',
+                    headerRight: () => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Settings')}
+                            style={{ marginRight: 15 }}
+                        >
+                            <Ionicons name="settings-outline" size={24} color="white" />
+                        </TouchableOpacity>
+                    ),
+                })}
             />
             <Stack.Screen
                 name="About"

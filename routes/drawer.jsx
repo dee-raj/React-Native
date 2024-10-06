@@ -1,14 +1,14 @@
 import {
     createDrawerNavigator,
     DrawerContentScrollView,
-    DrawerItemList
+    DrawerItemList,
 } from '@react-navigation/drawer';
 import AboutPage from '../screens/AboutPage';
 import SettingsPage from '../screens/SettingsPage';
 import AppNavigator from './homeStack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Text, View, StyleSheet } from 'react-native';
-import Header, { LogoImage } from '../shared/drawerIcon';
+import { LogoImage } from '../shared/drawerIcon';
 import DrawerIcon from '../shared/drawerIcon';
 
 const Drawer = createDrawerNavigator();
@@ -34,7 +34,7 @@ function RootDrawerNavigation() {
                     drawerStyle: {
                         backgroundColor: '#787878',
                         width: 240,
-                        marginTop: 20
+                        marginTop: 20,
                     },
                     drawerLabelStyle: {
                         fontSize: 16,
@@ -50,33 +50,27 @@ function RootDrawerNavigation() {
                     name="Root Home"
                     component={AppNavigator}
                     options={{
-                        drawerIcon: ({ focused }) => <DrawerIcon
-                            name={focused ? 'home' : 'maps-home-work'}
-                            focused={focused}
-                        />,
-                        headerTitle: () => <LogoImage title_two={'Home'} title_one={'Root'} />
+                        drawerIcon: ({ focused }) =>
+                            <DrawerIcon name={focused ? 'home' : 'maps-home-work'} focused={focused} />,
+                        headerTitle: () => <LogoImage title_two={'Home'} title_one={'Root'} />,
                     }}
                 />
                 <Drawer.Screen
                     name="About"
                     component={AboutPage}
                     options={{
-                        drawerIcon: ({ focused }) => <DrawerIcon
-                            name={focused ? 'query-builder' : 'info-outline'}
-                            focused={focused}
-                        />,
-                        headerTitle: () => <LogoImage title_one={'About'} title_two={'Review'} />
+                        drawerIcon: ({ focused }) =>
+                            <DrawerIcon name={focused ? 'query-builder' : 'info-outline'} focused={focused} />,
+                        headerTitle: () => <LogoImage title_one={'About'} title_two={'Review'} />,
                     }}
                 />
                 <Drawer.Screen
                     name="Settings"
                     component={SettingsPage}
                     options={{
-                        drawerIcon: ({ focused }) => <DrawerIcon
-                            name={focused ? 'settings-suggest' : 'settings-applications'}
-                            focused={focused}
-                        />,
-                        headerTitle: () => <LogoImage title_two={'Settings'} title_one={'Review'} />
+                        drawerIcon: ({ focused }) =>
+                            <DrawerIcon name={focused ? 'settings-suggest' : 'settings-applications'} focused={focused} />,
+                        headerTitle: () => <LogoImage title_two={'Settings'} title_one={'Review'} />,
                     }}
                 />
             </Drawer.Navigator>
@@ -94,7 +88,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         marginBottom: 20,
         color: '#333',
-        fontFamily:'Roboto'
+        fontFamily: 'Roboto',
     },
 });
 

@@ -1,10 +1,9 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useContext } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { globalstyles } from '../style/GlobalStyle'
+import { globalstyles } from '../style/GlobalStyle';
 import Card from '../shared/Card';
 import { ReviewsContext } from '../shared/ReviewsData';
-
 import { ToggleBtn } from '../shared/drawerIcon';
 import ModelScreen from './ModelScreen';
 
@@ -21,9 +20,12 @@ const HomePage = ({ navigation }) => {
                 data={reviews}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <View>
-                        <Pressable style={globalstyles.Btn} onPress={() => {
-                            // console.log('Navigating to review with data:', item);
+                    <Pressable
+                        style={({ pressed }) => [
+                            globalstyles.Btn,
+                            pressed ? styles.pressed : null
+                        ]}
+                        onPress={() => {
                             navigation.navigate('Review', {
                                 review: item.review,
                                 title: item.title,
@@ -31,17 +33,26 @@ const HomePage = ({ navigation }) => {
                                 reviewer: item.reviewer,
                                 date: item.date,
                             });
-                        }}>
-                            <Card>
-                                <Text style={globalstyles.textStyle}>{item.title} - {item.rating}</Text>
-                            </Card>
-                        </Pressable>
-                    </View>
+                        }}
+                        accessibilityLabel={`View details for ${item.title}`}
+                    >
+                        <Card>
+                            <Text style={globalstyles.textStyle}>
+                                {item.title} - {item.rating}
+                            </Text>
+                        </Card>
+                    </Pressable>
                 )}
                 contentContainerStyle={{ paddingVertical: 10 }}
             />
         </View>
-    )
-}
+    );
+};
+
+const styles = StyleSheet.create({
+    pressed: {
+        opacity: 0.5,
+    },
+});
 
 export default HomePage;
