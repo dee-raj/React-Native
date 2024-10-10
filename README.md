@@ -1,6 +1,6 @@
 # Movie/Web Series Review App
 
-A **React Native** application that allows users to add reviews of movies or web series. Users can input the movie name, type (movie or web series), rating (numerical), and reviewer name, along with the review details. This project helps users share their feedback and opinions about different movies and series.
+A **React Native** application built using **Expo** that allows users to add reviews of movies or web series. Users can input the movie name, type (movie or web series), rating (numerical), and reviewer name, along with the review details. This project helps users share their feedback and opinions about different movies and series.
 
 ## Table of Contents
 
@@ -9,7 +9,6 @@ A **React Native** application that allows users to add reviews of movies or web
 - [Usage](#usage)
 - [Screenshots](#screenshots)
 - [Technologies Used](#technologies-used)
-- [Project Structure](#project-structure)
 - [Contributing](#contributing)
 - [Contact](#contact)
 
@@ -31,13 +30,17 @@ A **React Native** application that allows users to add reviews of movies or web
 ### Prerequisites
 
 - Ensure you have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) (or [yarn](https://yarnpkg.com/)) installed on your machine.
-- You need [React Native CLI](https://reactnative.dev/docs/environment-setup) for development and testing on your local environment.
+- Install the Expo CLI globally if you haven't already:
 
+  ```bash
+  npm install -g expo-cli
+  ```
+  
 ### Clone the Repository
 
 ```bash
 git clone https://github.com/dee-raj/React-Native.git
-cd movie-review-app
+cd review-game
 ```
 
 ### Install Dependencies
@@ -54,40 +57,38 @@ Or using yarn:
 yarn install
 ```
 
-### Running the App
+### Running the App with Expo
 
-For Android:
+1. Start the Expo development server:
 
-```bash
-npx react-native run-android
-```
+   ```bash
+   expo start
+   ```
 
-For iOS:
-
-```bash
-npx react-native run-ios
-```
+2. Use the QR code in the terminal to run the app on your physical device using the **Expo Go** app (available on iOS and Android).
+3. Alternatively, press `a` in the terminal to run on an Android emulator, or `i` to run on an iOS simulator.
 
 ## Usage
 
 1. Once the app is running, you will be greeted by the homepage where you can see a list of reviews if any exist.
 2. To add a review, click on the "Add Review" button.
 3. Fill in the details like Movie/Web Series Name, Type, Rating, Reviewer’s Name, and the Review Description.
-4. Submit the review, and it will be added to the list.
+4. Validation is handled using **Yup**, ensuring required fields are filled in correctly before submitting.
+5. Submit the review, and it will be added to the list.
 
 ## Screenshots
 
-Include some screenshots of your app for better visualization. You can upload them in the `/screenshots` folder and reference them here.
+Included some screenshots of this app for better visualization. You can see them in the `/screenshots` folder and get better idea.
 
-```markdown
+
 ![Home](./screenshots/home.png)
 ![Menu-Drawer](./screenshots/drawer.png)
 ![Review](./screenshots/review.png)
-```
+
 
 ## Technologies Used
 
-- **React Native**: Frontend development for mobile (iOS and Android).
+- **React Native (Expo)**: Frontend development for mobile (iOS and Android) using Expo for easy setup.
 - **JavaScript/TypeScript**: Programming language.
 - **React Navigation**: For handling navigation between screens.
 - **Yup**: For form validation to ensure proper input in review fields.
@@ -102,9 +103,6 @@ Contributions are welcome! To contribute:
 4. Push to the branch (`git push origin feature/new-feature`).
 5. Open a pull request.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
