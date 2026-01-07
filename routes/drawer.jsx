@@ -6,6 +6,7 @@ import {
 import AboutPage from '../screens/AboutPage';
 import SettingsPage from '../screens/SettingsPage';
 import AppNavigator from './homeStack';
+import GameStack from './gameStack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Text, View, StyleSheet } from 'react-native';
 import { LogoImage } from '../shared/drawerIcon';
@@ -53,6 +54,15 @@ function RootDrawerNavigation() {
                         drawerIcon: ({ focused }) =>
                             <DrawerIcon name={focused ? 'home' : 'maps-home-work'} focused={focused} />,
                         headerTitle: () => <LogoImage title_two={'Home'} title_one={'Root'} />,
+                    }}
+                />
+                <Drawer.Screen
+                    name="Games"
+                    component={GameStack}
+                    options={{
+                        drawerIcon: ({ focused }) =>
+                            <DrawerIcon name={focused ? 'videogame-asset' : 'videogame-asset-off'} focused={focused} />,
+                        headerTitle: () => <LogoImage title_two={'Hub'} title_one={'Games'} />,
                     }}
                 />
                 <Drawer.Screen

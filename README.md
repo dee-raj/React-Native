@@ -1,111 +1,105 @@
-# Movie/Web Series Review App
+# Mini Games Hub & Reviewer 🎮🎬
 
-A **React Native** application built using **Expo** that allows users to add reviews of movies or web series. Users can input the movie name, type (movie or web series), rating (numerical), and reviewer name, along with the review details. This project helps users share their feedback and opinions about different movies and series.
+A premium **React Native (Expo)** application that combines a robust **Mini Games Hub** with a professional **Movie/Web Series Review** system. Built with a focus on polished UI/UX, smooth animations, and persistent offline progression.
 
-## Table of Contents
+---
 
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Screenshots](#screenshots)
-- [Technologies Used](#technologies-used)
-- [Contributing](#contributing)
-- [Contact](#contact)
+## 🚀 The Games Hub
 
-## Features
+Experience six classic logic and puzzle games, all modernized with vibrant visuals and intelligent gameplay.
 
-- Add reviews for movies or web series.
-- Input fields for:
-  - Movie/Web Series Name
-  - Type (Movie or Web Series)
-  - Rating (out of 5 or 10)
-  - Reviewer’s Name
-  - Review Description
-- Validation of input fields using Yup..
-- View a list of submitted reviews.
-- Simple and intuitive user interface.
+### 1. Tic Tac Toe ⭕❌
+- **Neon Aesthetic**: High-contrast, glowing UI for a modern feel.
+- **Winning Logic**: Instant winner detection with animated celebratory banners.
+- **Micro-animations**: Satisfying Haptic-like scaling effects on every move.
 
-## Installation
+### 2. Memory Match 🧠
+- **Level System**: 21 unlockable levels with persistent progress.
+- **Visual Rewards**: Star-rating system (1-3 stars) based on performance.
+- **Scaling Difficulty**: Grids grow from 2x2 to complex 8x8 layouts.
+
+### 3. 2048 🔢
+- **Smooth Merges**: Custom "pop" animations when tiles combine.
+- **High Scores**: Automatically tracks and persists your all-time "BEST" score locally.
+- **Interactive UI**: Fluid swipe gestures and high-contrast tile design.
+
+### 4. Onet Master 🀄
+- **Intelligent Shuffle**: Automatically reshuffles the board if no moves remain, preventing deadlocks.
+- **Aquatic Theme**: Beautiful sea-themed level selection and bubble-style UI.
+- **21 Levels**: Progressive difficulty scaling for endless fun.
+
+### 5. Sliding Puzzle 🧩
+- **Solvability Guaranteed**: Every puzzle is mathematically checked to ensure it can be solved.
+- **Performance Tracking**: Real-time move counter and precision timer.
+- **Tactile Design**: Crisp, wood-textured tiles and smooth slide animations.
+
+### 6. Flow Pipes 💧
+- **Path-First Logic**: Advanced algorithm guarantees 100% solvable puzzles that fill the entire grid.
+- **O(1) Win Check**: Instant validation of path connections and board fill.
+- **Vibrant Pipes**: Draw colorful connecting lines without crossing paths.
+
+---
+
+## 🎬 Review Features
+
+In addition to games, the app includes a dedicated review system:
+- **Comprehensive Fields**: Add reviews for movies or web series with names, ratings, and detailed descriptions.
+- **Form Validation**: Robust validation using **Yup** to ensure high-quality data.
+- **Dynamic List**: View and manage your collection of reviews in a clean, scrollable interface.
+
+---
+
+## 📸 Screenshots
+
+| Games Hub Home | Tic Tac Toe | Memory Match |
+|:---:|:---:|:---:|
+| ![Hub Home](./screenshots/hub_home.png) | ![Tic Tac Toe](./screenshots/tic_tac_toe.png) | ![Memory Match](./screenshots/memory_match.png) |
+
+| 2048 | Onet Master | Sliding Puzzle |
+|:---:|:---:|:---:|
+| ![2048](./screenshots/game_2048.png) | ![Onet Master](./screenshots/onet_master.png) | ![Sliding Puzzle](./screenshots/sliding_puzzle.png) |
+
+---
+
+## 🛠️ Technologies Used
+
+- **React Native (Expo)**: Cross-platform mobile framework.
+- **React Navigation**: Multi-level navigation including Animated Drawer and Stack.
+- **AsyncStorage**: Persistent offline storage for game progress and high scores.
+- **Confetti-Cannon**: Dynamic celebratory effects on level completion.
+- **Yup & Formik**: Structure and validation for the review system.
+- **Animated API**: Custom animations for high-quality transitions.
+
+---
+
+## 📦 Installation & Setup
 
 ### Prerequisites
+- [Node.js](https://nodejs.org/) (LTS)
+- [Expo Go](https://expo.dev/expo-go) app on your mobile device.
 
-- Ensure you have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) (or [yarn](https://yarnpkg.com/)) installed on your machine.
-- Install the Expo CLI globally if you haven't already:
-
-  ```bash
-  npm install -g expo-cli
-  ```
-  
-### Clone the Repository
-
-```bash
-git clone https://github.com/dee-raj/React-Native.git
-cd review-game
-```
-
-### Install Dependencies
-
-Using npm:
-
-```bash
-npm install
-```
-
-Or using yarn:
-
-```bash
-yarn install
-```
-
-### Running the App with Expo
-
-1. Start the Expo development server:
-
+### Steps
+1. **Clone the project**:
    ```bash
-   expo start
+   git clone https://github.com/dee-raj/React-Native.git
+   cd review-game
+   ```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Start the app**:
+   ```bash
+   npx expo start
    ```
 
-2. Use the QR code in the terminal to run the app on your physical device using the **Expo Go** app (available on iOS and Android).
-3. Alternatively, press `a` in the terminal to run on an Android emulator, or `i` to run on an iOS simulator.
+---
 
-## Usage
-
-1. Once the app is running, you will be greeted by the homepage where you can see a list of reviews if any exist.
-2. To add a review, click on the "Add Review" button.
-3. Fill in the details like Movie/Web Series Name, Type, Rating, Reviewer’s Name, and the Review Description.
-4. Validation is handled using **Yup**, ensuring required fields are filled in correctly before submitting.
-5. Submit the review, and it will be added to the list.
-
-## Screenshots
-
-Included some screenshots of this app for better visualization. You can see them in the `/screenshots` folder and get better idea.
-
-
-![Home](./screenshots/home.png)
-![Menu-Drawer](./screenshots/drawer.png)
-![Review](./screenshots/review.png)
-
-
-## Technologies Used
-
-- **React Native (Expo)**: Frontend development for mobile (iOS and Android) using Expo for easy setup.
-- **JavaScript/TypeScript**: Programming language.
-- **React Navigation**: For handling navigation between screens.
-- **Yup**: For form validation to ensure proper input in review fields.
-  
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository.
-2. Create a new feature branch (`git checkout -b feature/new-feature`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature/new-feature`).
-5. Open a pull request.
-
-
-## Contact
+## 👨‍💻 Contact
 
 - **Name**: Dhurbaraj N. Joshi
+- **GitHub**: [@dee-raj](https://github.com/dee-raj)
 - **Email**: [dhurbaraj343sky@gmail.com](mailto:dhurbaraj343sky@gmail.com)
-- **GitHub**: [dee-raj](https://github.com/dee-raj)
+
+---
+*Created with ❤️ for Advanced Agentic Coding.*
