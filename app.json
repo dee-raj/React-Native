@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "GameGroup",
-    "slug": "GameGroup",
+    "slug": "game-group",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,11 +26,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "39c42a4e-163e-4edd-8316-9b179a4f8c2f"
+        "projectId": "11a5332a-449f-4f25-9553-0ffd81aee634"
       }
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "owner": "dee-max"
   }
 }

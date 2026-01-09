@@ -11,6 +11,9 @@ import SlidingPuzzleLevelSelectionScreen from '../games/SlidingPuzzle/SlidingPuz
 import SlidingPuzzleScreen from '../games/SlidingPuzzle/SlidingPuzzleScreen';
 import FlowLevelSelectionScreen from '../games/FlowPipes/FlowLevelSelectionScreen';
 import FlowGameScreen from '../games/FlowPipes/FlowGameScreen';
+import AbacusCategoryScreen from '../games/Abacus/AbacusCategoryScreen';
+import AbacusLevelSelectionScreen from '../games/Abacus/AbacusLevelSelectionScreen';
+import AbacusGameScreen from '../games/Abacus/AbacusGameScreen';
 
 const Stack = createStackNavigator();
 
@@ -85,6 +88,21 @@ const GameStack = () => {
                 name="FlowGame"
                 component={FlowGameScreen}
                 options={{ title: 'Flow Pipes' }}
+            />
+            <Stack.Screen
+                name="AbacusCategory"
+                component={AbacusCategoryScreen}
+                options={{ title: 'Choose Category' }}
+            />
+            <Stack.Screen
+                name="AbacusLevelSelection"
+                component={AbacusLevelSelectionScreen}
+                options={{ title: 'Abacus Levels' }}
+            />
+            <Stack.Screen
+                name="AbacusGame"
+                component={AbacusGameScreen}
+                options={{ title: 'Abacus Math' }}
             />
         </Stack.Navigator>
     );

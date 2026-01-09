@@ -1,44 +1,65 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, Animated } from 'react-native';
-import { globalstyles } from '../style/GlobalStyle';
-import Card from '../shared/Card';
+import React, { useRef, useEffect, useState } from 'react';
+import {
+    View,
+    Text,
+    Pressable,
+    StyleSheet,
+    FlatList,
+    Animated,
+    Dimensions,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
+const COLUMN_WIDTH = (width - 48) / 3;
 
 const GAMES = [
     {
         name: 'Tic Tac Toe',
         route: 'TicTacToe',
-        color: '#00FFC6', // more saturated greenish
-        emoji: '❌⭕'
+        image: require('../assets/games/tic-tac-toe.png'),
+        category: 'Puzzles',
     },
     {
         name: 'Memory Match',
         route: 'MemoryLevelSelection',
-        color: '#FFAA00', // saturated orange
-        emoji: '🧠'
+        image: require('../assets/games/memory.png'),
+        category: 'Puzzles',
     },
     {
         name: '2048',
         route: 'Game2048',
-        color: '#FF66AA', // hot pink
-        emoji: '🔢'
+        image: require('../assets/games/2048.png'),
+        category: 'Puzzles',
     },
     {
         name: 'Onet Master',
         route: 'OnetLevelSelection',
-        color: '#00BFA6', // teal
-        emoji: '🀄'
+        icon: 'images',
+        image: require('../assets/games/onet-master.png'),
+        family: 'FontAwesome6',
+        category: 'Puzzles',
     },
     {
         name: 'Sliding Puzzle',
         route: 'SlidingPuzzleLevelSelection',
-        color: '#FF77FF', // bright magenta
-        emoji: '🧩'
+        image: require('../assets/games/sliding-puzzle.png'),
+        category: 'Puzzles',
     },
     {
         name: 'Flow Pipes',
         route: 'FlowLevelSelection',
-        color: '#00E0FF', // cyan
-        emoji: '💧'
+        image: require('../assets/games/flow-pipes.png'),
+        category: 'Puzzles',
+    },
+    {
+        name: 'Abacus Math',
+        route: 'AbacusCategory',
+        image: require('../assets/games/maths-game.png'),
+        icon: 'calculator',
+        family: 'FontAwesome6',
+        category: 'Puzzles',
     },
 ];
 
@@ -46,121 +67,198 @@ const GamesHome = ({ navigation }) => {
     const animatedValues = useRef(GAMES.map(() => new Animated.Value(0))).current;
 
     useEffect(() => {
-        const animations = animatedValues.map((anim, idx) =>
-            Animated.timing(anim, {
-                toValue: 1,
-                duration: 400,
-                delay: idx * 100,
-                useNativeDriver: true,
-            })
-        );
-        Animated.stagger(100, animations).start();
+        Animated.stagger(80,
+            animatedValues.map((anim) =>
+                Animated.timing(anim, {
+                    toValue: 1,
+                    duration: 400,
+                    useNativeDriver: true,
+                })
+            )
+        ).start();
     }, []);
 
-    return (
-        <ScrollView
-            contentContainerStyle={styles.container}
-            showsVerticalScrollIndicator={false}
-        >
-            <Text style={styles.title}>🎮 Games Hub</Text>
+    const renderGameItem = ({ item, index }) => {
+        const animStyle = {
+            opacity: animatedValues[index] || 1,
+            transform: [
+                {
+                    scale: animatedValues[index] ? animatedValues[index].interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.8, 1],
+                    }) : 1,
+                },
+            ],
+        };
 
-            <View style={styles.grid}>
-                {GAMES.map((game, idx) => {
-                    const animStyle = {
-                        opacity: animatedValues[idx],
-                        transform: [
-                            {
-                                translateY: animatedValues[idx].interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [30, 0],
-                                }),
-                            },
-                        ],
-                    };
-                    return (
-                        <Animated.View key={idx} style={[styles.btn, animStyle]}>
-                            <Pressable
-                                style={({ pressed }) => [
-                                    styles.pressable,
-                                    {
-                                        transform: pressed ? [{ scale: 0.96 }] : [{ scale: 1 }],
-                                        shadowOpacity: pressed ? 0.35 : 0.5,
-                                    },
-                                ]}
-                                onPress={() => navigation.navigate(game.route)}
-                            >
-                                <Card
-                                    backgroundColor={game.color}
-                                    style={styles.card}
-                                >
-                                    <Text style={styles.btnText}>
-                                        {game.emoji} {game.name}
-                                    </Text>
-                                </Card>
-                            </Pressable>
-                        </Animated.View>
-                    );
-                })}
-            </View>
-        </ScrollView>
+        return (
+            <Animated.View style={[styles.cardContainer, animStyle]}>
+                <Pressable
+                    onPress={() => navigation.navigate(item.route)}
+                    style={({ pressed }) => [
+                        styles.gameCard,
+                        pressed && styles.cardPressed
+                    ]}
+                >
+                    {item.image ? (
+                        <Animated.Image
+                            source={item.image}
+                            style={styles.gameImage}
+                            resizeMode="cover"
+                        />
+                    ) : (
+                        <View style={styles.iconContainer}>
+                            {item.family === 'FontAwesome6' ? (
+                                <FontAwesome6 name={item.icon} size={32} color="#FFF" />
+                            ) : (
+                                <Ionicons name={item.icon} size={32} color="#FFF" />
+                            )}
+                        </View>
+                    )}
+                </Pressable>
+                <Text style={styles.gameLabel} numberOfLines={1}>{item.name}</Text>
+            </Animated.View>
+        );
+    };
+
+    return (
+        <SafeAreaView style={styles.safeArea}>
+            <FlatList
+                data={GAMES}
+                renderItem={renderGameItem}
+                keyExtractor={(item) => item.route}
+                numColumns={3}
+                contentContainerStyle={styles.gridContent}
+                showsVerticalScrollIndicator={false}
+            />
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        alignItems: 'center',
-        paddingBottom: 40,
-        backgroundColor: '#F0F8FF', // slightly richer background
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#8181b1ff',
     },
-    title: {
-        fontSize: 34,
-        fontWeight: 'bold',
-        marginBottom: 30,
-        color: '#FF3399', // saturated magenta for title
-        textAlign: 'center',
-        textShadowColor: 'rgba(0,0,0,0.2)',
-        textShadowOffset: { width: 2, height: 2 },
-        textShadowRadius: 4,
+    searchContainer: {
+        paddingHorizontal: 16,
+        marginTop: 15,
     },
-    grid: {
-        width: '100%',
+    searchBar: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1C1C1E',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        height: 48,
     },
-    btn: {
-        width: '48%',
-        marginBottom: 20,
-        borderRadius: 20,
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.45,
-        shadowRadius: 10,
+    searchIcon: {
+        marginRight: 10,
     },
-    pressable: {
-        borderRadius: 20,
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.45,
-        shadowRadius: 10,
+    searchInput: {
+        flex: 1,
+        color: '#FFFFFF',
+        fontSize: 16,
     },
-    card: {
-        paddingVertical: 25,
-        borderRadius: 20,
+    tabsContainer: {
+        marginTop: 15,
+        paddingLeft: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#1C1C1E',
+    },
+    tabItem: {
+        marginRight: 25,
+        paddingVertical: 10,
+        alignItems: 'center',
+    },
+    tabText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#8E8E93',
+    },
+    tabTextActive: {
+        color: '#A3FD50',
+    },
+    tabUnderline: {
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        height: 2,
+        backgroundColor: '#A3FD50',
+        borderRadius: 2,
+    },
+    gridContent: {
+        padding: 16,
+        paddingBottom: 100,
+    },
+    cardContainer: {
+        width: COLUMN_WIDTH,
+        marginHorizontal: 4,
+        marginBottom: 16,
+        alignItems: 'center',
+
+        elevation: 5,
+        shadowColor: '#f0ceceff',
+        shadowOffset: {
+            width: 2,
+            height: 4,
+        },
+        paddingBottom: 16,
+        borderRadius: 12,
+    },
+    gameCard: {
+        width: COLUMN_WIDTH - 8,
+        height: COLUMN_WIDTH - 8,
+        backgroundColor: '#1C1C1E',
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+        borderWidth: 3,
+        borderColor: '#f3b4b4ff',
+    },
+    cardPressed: {
+        transform: [{ scale: 0.95 }],
+        backgroundColor: '#2C2C2E',
+    },
+    gameImage: {
+        width: '100%',
+        height: '100%',
+    },
+    iconContainer: {
         justifyContent: 'center',
         alignItems: 'center',
     },
-    btnText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
+    gameLabel: {
+        marginTop: 8,
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#E5E5EA',
         textAlign: 'center',
-        textShadowColor: 'rgba(0,0,0,0.2)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
+    },
+    bottomNav: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 80,
+        backgroundColor: '#1C1C1E',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        paddingBottom: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#2C2C2E',
+    },
+    navItem: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 60,
+        height: 60,
+    },
+    navItemActive: {
+        backgroundColor: 'rgba(163, 253, 80, 0.1)',
+        borderRadius: 15,
     },
 });
 

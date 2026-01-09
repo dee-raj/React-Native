@@ -48,21 +48,21 @@ function RootDrawerNavigation() {
                 }}
             >
                 <Drawer.Screen
-                    name="Root Home"
-                    component={AppNavigator}
-                    options={{
-                        drawerIcon: ({ focused }) =>
-                            <DrawerIcon name={focused ? 'home' : 'maps-home-work'} focused={focused} />,
-                        headerTitle: () => <LogoImage title_two={'Home'} title_one={'Root'} />,
-                    }}
-                />
-                <Drawer.Screen
                     name="Games"
                     component={GameStack}
                     options={{
                         drawerIcon: ({ focused }) =>
                             <DrawerIcon name={focused ? 'videogame-asset' : 'videogame-asset-off'} focused={focused} />,
                         headerTitle: () => <LogoImage title_two={'Hub'} title_one={'Games'} />,
+                    }}
+                />
+                <Drawer.Screen
+                    name="Root Home"
+                    component={AppNavigator}
+                    options={{
+                        drawerIcon: ({ focused }) =>
+                            <DrawerIcon name={focused ? 'home' : 'maps-home-work'} focused={focused} />,
+                        headerTitle: () => <LogoImage title_two={'Home'} title_one={'Root'} />,
                     }}
                 />
                 <Drawer.Screen

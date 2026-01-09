@@ -2,9 +2,18 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Pressable, Animated, Dimensions } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const BOARD_SIZE = SCREEN_WIDTH - 40;
+const { width, height } = Dimensions.get('window');
+
+// Reserve space for header, status bar, buttons
+const SAFE_VERTICAL_SPACE = 260;
+
+const BOARD_SIZE = Math.min(
+    width - 40,
+    height - SAFE_VERTICAL_SPACE
+);
+
 
 const TicTacToeScreen = () => {
     const [board, setBoard] = useState(Array(9).fill(null));
@@ -29,7 +38,6 @@ const TicTacToeScreen = () => {
 
     const winner = calculateWinner(board);
     const isDraw = !winner && board.every(square => square !== null);
-
     const status = winner ? `🎉 Winner: ${winner}` : isDraw ? "🤝 It's a Draw!" : `Next Turn: ${isXNext ? 'X' : 'O'}`;
 
     const handlePress = (index) => {
@@ -61,55 +69,66 @@ const TicTacToeScreen = () => {
     const SQUARE_SIZE = BOARD_SIZE / 3;
 
     return (
-        <View style={globalstyles.container}>
-            {/* Status Banner */}
-            <View style={styles.statusContainer}>
-                <Text style={styles.statusText}>{status}</Text>
+        <SafeAreaView style={{ flex: 1 }}>
+            <View style={globalstyles.container}>
+                {/* Status Banner */}
+                <View style={styles.statusContainer}>
+                    <Text style={styles.statusText}>{status}</Text>
+                </View>
+
+                {/* Board */}
+                <View style={[styles.board, { width: BOARD_SIZE, height: BOARD_SIZE }]}>
+                    {board.map((cell, i) => (
+                        <Animated.View key={i} style={{ transform: [{ scale: scaleAnims[i] }] }}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.square,
+                                    { width: SQUARE_SIZE, height: SQUARE_SIZE },
+                                    cell && {
+                                        backgroundColor: cell === 'X' ? '#ffe3e3' : '#d0e7ff',
+                                    },
+                                ]}
+                                onPress={() => handlePress(i)}
+                                activeOpacity={0.7}
+                            >
+                                <Text
+                                    style={[
+                                        styles.squareText,
+                                        { color: cell === 'X' ? '#d32f2f' : '#1976d2' },
+                                    ]}
+                                >
+                                    {cell}
+                                </Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    ))}
+                </View>
+
+                {/* Reset Button */}
+                {(winner || isDraw) && (
+                    <Pressable
+                        onPress={resetGame}
+                        style={({ pressed }) => [
+                            styles.resetButton,
+                            { transform: [{ scale: pressed ? 0.95 : 1 }] },
+                        ]}
+                    >
+                        <Text style={styles.resetButtonText}>New Game 🔄 </Text>
+                    </Pressable>
+                )}
+
+                {/* Confetti */}
+                {showConfetti && (
+                    <ConfettiCannon
+                        count={120}
+                        fadeOut
+                        explosionSpeed={350}
+                        fallSpeed={2800}
+                        origin={{ x: width / 2, y: 0 }}
+                    />
+                )}
             </View>
-
-            {/* Board */}
-            <View style={[styles.board, { width: BOARD_SIZE, height: BOARD_SIZE }]}>
-                {board.map((cell, i) => (
-                    <Animated.View key={i} style={{ transform: [{ scale: scaleAnims[i] }] }}>
-                        <TouchableOpacity
-                            style={[
-                                styles.square,
-                                { width: SQUARE_SIZE, height: SQUARE_SIZE },
-                                cell && { backgroundColor: cell === 'X' ? '#ffe3e3' : '#d0e7ff' }
-                            ]}
-                            onPress={() => handlePress(i)}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.squareText, { color: cell === 'X' ? '#d32f2f' : '#1976d2' }]}>{cell}</Text>
-                        </TouchableOpacity>
-                    </Animated.View>
-                ))}
-            </View>
-
-            {/* Reset Button */}
-            {(winner || isDraw) && (
-                <Pressable
-                    onPress={resetGame}
-                    style={({ pressed }) => [
-                        styles.resetButton,
-                        { transform: [{ scale: pressed ? 0.95 : 1 }] },
-                    ]}
-                >
-                    <Text style={styles.resetButtonText}>New Game 🔄 </Text>
-                </Pressable>
-            )}
-
-            {/* Confetti */}
-            {showConfetti && (
-                <ConfettiCannon
-                    ref={confettiRef}
-                    count={300}
-                    origin={{ x: SCREEN_WIDTH / 2, y: -20 }}
-                    fadeOut={false}
-                    autoStart={true}
-                />
-            )}
-        </View>
+        </SafeAreaView>
     );
 };
 
