@@ -61,6 +61,14 @@ const GAMES = [
         family: 'FontAwesome6',
         category: 'Puzzles',
     },
+    {
+        name: 'Speak & Learn',
+        route: 'SpeakAndLearn',
+        image: require('../assets/games/speak-and-learn.png'),
+        icon: 'volume-high',
+        family: 'Ionicons',
+        category: 'Learning',
+    },
 ];
 
 const GamesHome = ({ navigation }) => {

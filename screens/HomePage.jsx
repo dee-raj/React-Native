@@ -1,6 +1,5 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useContext } from 'react';
-import { StatusBar } from 'expo-status-bar';
 import { globalstyles } from '../style/GlobalStyle';
 import Card from '../shared/Card';
 import { ReviewsContext } from '../shared/ReviewsData';
@@ -11,7 +10,6 @@ const HomePage = ({ navigation }) => {
     const { reviews } = useContext(ReviewsContext);
     return (
         <View style={globalstyles.container}>
-            <StatusBar backgroundColor='#54CA98' style='inverted' />
 
             <ModelScreen />
             <ToggleBtn name={'menu-open'} text={'Open Model to Add More'} />

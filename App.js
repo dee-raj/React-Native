@@ -10,7 +10,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ReviewsProvider>
-        <StatusBar style="light" />
+        <StatusBar backgroundColor='#8db7a5ff' style='inverted' />
         <RootDrawerNavigation />
       </ReviewsProvider>
     </GestureHandlerRootView>

@@ -14,6 +14,8 @@ import FlowGameScreen from '../games/FlowPipes/FlowGameScreen';
 import AbacusCategoryScreen from '../games/Abacus/AbacusCategoryScreen';
 import AbacusLevelSelectionScreen from '../games/Abacus/AbacusLevelSelectionScreen';
 import AbacusGameScreen from '../games/Abacus/AbacusGameScreen';
+import SpeakAndLearnScreen from '../games/SpeakAndLearn/SpeakAndLearnScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -104,6 +106,12 @@ const GameStack = () => {
                 component={AbacusGameScreen}
                 options={{ title: 'Abacus Math' }}
             />
+            <Stack.Screen
+                name="SpeakAndLearn"
+                component={SpeakAndLearnScreen}
+                options={{ title: 'Speak & Learn', headerShown: false }}
+            />
+
         </Stack.Navigator>
     );
 };
