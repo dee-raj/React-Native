@@ -69,6 +69,13 @@ const GAMES = [
         family: 'Ionicons',
         category: 'Learning',
     },
+    {
+        name: 'Shape Tap',
+        route: 'ShapeTap',
+        icon: 'shapes',
+        family: 'FontAwesome6',
+        category: 'Learning',
+    },
 ];
 
 const GamesHome = ({ navigation }) => {

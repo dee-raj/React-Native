@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Pressable, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Pressable, Dimensions, ScrollView, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { globalstyles } from '../../style/GlobalStyle';
-import Card from '../../shared/Card';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ConfettiCannon from 'react-native-confetti-cannon';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_MARGIN = 5;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const CARD_MARGIN = 8;
 
 const SYMBOL_POOL = [
     '⭐', '🍎', '🚗', '🚀', '⚽', '🍦', '🎮', '💡',
@@ -18,6 +21,170 @@ const SYMBOL_POOL = [
 
 const STORAGE_KEY = '@memory_game_progress';
 
+/* ---------- Modern Color Palette ---------- */
+const COLORS = {
+    // Rich gradient backgrounds
+    bgStart: "#667eea",
+    bgMid: "#764ba2",
+    bgEnd: "#f093fb",
+
+    // Vibrant accents
+    primaryStart: "#F857A6",
+    primaryEnd: "#FF5858",
+
+    secondaryStart: "#667eea",
+    secondaryEnd: "#764ba2",
+
+    successStart: "#10B981",
+    successEnd: "#059669",
+
+    cardHiddenStart: "#0e8a75ff",
+    cardHiddenEnd: "#e5b372ff",
+
+    cardFlippedStart: "#FFFFFF",
+    cardFlippedEnd: "#F9FAFB",
+
+    // Neon colors
+    neonPurple: "#9333EA",
+    neonPink: "#F472B6",
+    neonCyan: "#06B6D4",
+    neonYellow: "#FCD34D",
+
+    // Text
+    textWhite: "#FFFFFF",
+    textDark: "#1F2937",
+};
+
+/* ---------- Animated Background Orbs ---------- */
+const BackgroundOrbs = () => {
+    const orbs = [
+        { top: 60, left: -40, size: 160, colors: [COLORS.primaryStart, COLORS.primaryEnd] },
+        { top: 220, right: -60, size: 200, colors: [COLORS.secondaryStart, COLORS.secondaryEnd] },
+        { bottom: 120, left: 20, size: 140, colors: [COLORS.successStart, COLORS.successEnd] },
+        { top: SCREEN_HEIGHT * 0.45, right: 10, size: 130, colors: [COLORS.neonPink, "#EE5253"] },
+        { bottom: 220, right: 70, size: 110, colors: [COLORS.neonCyan, "#0891B2"] },
+    ];
+
+    return (
+        <View style={StyleSheet.absoluteFill}>
+            {orbs.map((orb, i) => (
+                <LinearGradient
+                    key={i}
+                    colors={orb.colors}
+                    style={{
+                        position: "absolute",
+                        top: orb.top,
+                        left: orb.left,
+                        right: orb.right,
+                        bottom: orb.bottom,
+                        width: orb.size,
+                        height: orb.size,
+                        borderRadius: orb.size / 2,
+                        opacity: 0.2,
+                    }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                />
+            ))}
+        </View>
+    );
+};
+
+/* ---------- Animated Card Component ---------- */
+const MemoryCard = ({ card, index, isFlipped, onPress, cardSize }) => {
+    const flipAnim = React.useRef(new Animated.Value(0)).current;
+    const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+    React.useEffect(() => {
+        Animated.spring(flipAnim, {
+            toValue: isFlipped ? 1 : 0,
+            friction: 8,
+            tension: 40,
+            useNativeDriver: true,
+        }).start();
+    }, [isFlipped, flipAnim]);
+
+    const handlePressIn = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 0.95,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const handlePressOut = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 1,
+            friction: 3,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const frontRotate = flipAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '180deg'],
+    });
+
+    const backRotate = flipAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['180deg', '360deg'],
+    });
+
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            activeOpacity={1}
+            style={[styles.cardContainer, { width: cardSize, height: cardSize }]}
+        >
+            <Animated.View
+                style={[
+                    styles.cardInner,
+                    { transform: [{ scale: scaleAnim }] }
+                ]}
+            >
+                {/* Back of card (hidden) */}
+                <Animated.View
+                    style={[
+                        styles.cardFace,
+                        styles.cardBack,
+                        { transform: [{ rotateY: frontRotate }] },
+                    ]}
+                >
+                    <LinearGradient
+                        colors={[COLORS.cardHiddenStart, COLORS.cardHiddenEnd]}
+                        style={styles.cardGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
+                        <View style={styles.cardInnerGlow} />
+                        <Text style={[styles.cardQuestion, { fontSize: cardSize * 0.4 }]}>?</Text>
+                    </LinearGradient>
+                </Animated.View>
+
+                {/* Front of card (revealed) */}
+                <Animated.View
+                    style={[
+                        styles.cardFace,
+                        styles.cardFront,
+                        { transform: [{ rotateY: backRotate }] },
+                    ]}
+                >
+                    <LinearGradient
+                        colors={[COLORS.cardFlippedStart, COLORS.cardFlippedEnd]}
+                        style={styles.cardGradient}
+                    >
+                        <View style={[styles.cardInnerGlow, { backgroundColor: 'rgba(102, 126, 234, 0.1)' }]} />
+                        <Text style={[styles.cardEmoji, { fontSize: cardSize * 0.5 }]}>
+                            {card.content}
+                        </Text>
+                    </LinearGradient>
+                </Animated.View>
+            </Animated.View>
+        </TouchableOpacity>
+    );
+};
+
 const MemoryGameScreen = ({ route, navigation }) => {
     const { level: initialLevel } = route.params || { level: 1 };
     const [level, setLevel] = useState(initialLevel);
@@ -28,12 +195,11 @@ const MemoryGameScreen = ({ route, navigation }) => {
     const [matchedPairs, setMatchedPairs] = useState([]);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Stats
     const [attempts, setAttempts] = useState(0);
     const [failures, setFailures] = useState(0);
     const [showResults, setShowResults] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(false);
 
-    // Load progress
     useEffect(() => {
         const loadProgress = async () => {
             try {
@@ -49,13 +215,10 @@ const MemoryGameScreen = ({ route, navigation }) => {
         loadProgress();
     }, []);
 
-    // Save progress
     const saveProgress = async (currentLevel, completed) => {
         try {
             const savedData = await AsyncStorage.getItem(STORAGE_KEY);
             const parsed = savedData ? JSON.parse(savedData) : { currentLevel: 1, completed: [] };
-
-            // Only update currentLevel if the new one is higher
             const newCurrentLevel = Math.max(parsed.currentLevel, currentLevel);
 
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -68,8 +231,6 @@ const MemoryGameScreen = ({ route, navigation }) => {
     };
 
     const initGame = useCallback((lvl) => {
-        // Scaling: Level 1 (2x2) = 2 pairs. Level 2 = 3 pairs. Level 3 (2x4) = 4 pairs...
-        // Total cards = (lvl + 1) * 2
         const pairCount = lvl + 1;
         const selectedSymbols = SYMBOL_POOL.slice(0, Math.min(pairCount, SYMBOL_POOL.length));
 
@@ -84,6 +245,7 @@ const MemoryGameScreen = ({ route, navigation }) => {
         setAttempts(0);
         setFailures(0);
         setShowResults(false);
+        setShowConfetti(false);
     }, []);
 
     useEffect(() => {
@@ -110,10 +272,10 @@ const MemoryGameScreen = ({ route, navigation }) => {
                 setIsProcessing(false);
 
                 if (newMatched.length === cards.length / 2) {
-                    // Level Completed
                     const updatedCompleted = [...new Set([...completedLevels, level])].sort((a, b) => a - b);
                     setCompletedLevels(updatedCompleted);
                     saveProgress(level + 1, updatedCompleted);
+                    setShowConfetti(true);
                     setTimeout(() => setShowResults(true), 500);
                 }
             } else {
@@ -131,7 +293,6 @@ const MemoryGameScreen = ({ route, navigation }) => {
         setLevel(nextLvl);
     };
 
-    // Calculate dynamic columns based on card count
     const getColumns = () => {
         const count = cards.length;
         if (count <= 4) return 2;
@@ -143,99 +304,276 @@ const MemoryGameScreen = ({ route, navigation }) => {
     const cardSize = (SCREEN_WIDTH - 80) / columns;
 
     return (
-        <View style={globalstyles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Text style={{ color: '#784575', fontWeight: 'bold' }}>← Back</Text>
-                </TouchableOpacity>
-                <Text style={[globalstyles.textStyle, { fontSize: 22 }]}>Level {level}</Text>
-                <Text style={{ fontWeight: 'bold' }}>Try: {attempts}</Text>
-            </View>
+        <SafeAreaView style={styles.safeArea}>
+            <LinearGradient
+                colors={[COLORS.bgStart, COLORS.bgMid, COLORS.bgEnd]}
+                style={styles.container}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+            >
+                <BackgroundOrbs />
 
-            <ScrollView contentContainerStyle={styles.grid}>
-                {cards.map((card, index) => {
-                    const isFlipped = flippedIndices.includes(index) || matchedPairs.includes(card.content);
-                    return (
-                        <TouchableOpacity
-                            key={index}
-                            style={[
-                                styles.card,
-                                { width: cardSize, height: cardSize },
-                                isFlipped ? styles.cardFlipped : styles.cardHidden
-                            ]}
-                            onPress={() => handleFlip(index)}
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        style={styles.backBtn}
+                    >
+                        <LinearGradient
+                            colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
+                            style={styles.backBtnGradient}
                         >
-                            <Text style={[styles.cardText, { fontSize: cardSize * 0.5 }]}>
-                                {isFlipped ? card.content : '?'}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
-            </ScrollView>
+                            <Ionicons name="arrow-back" size={24} color={COLORS.textWhite} />
+                        </LinearGradient>
+                    </TouchableOpacity>
 
-            {showResults && (
-                <View style={styles.resultsOverlay}>
-                    <Text style={styles.confetti}>🎉 ✨ 🎊 ✨ 🎉</Text>
-                    <Text style={styles.congratsText}>Level {level} Cleared!</Text>
+                    <LinearGradient
+                        colors={[COLORS.primaryStart, COLORS.primaryEnd]}
+                        style={styles.levelBadge}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                    >
+                        <Text style={styles.levelText}>LEVEL {level}</Text>
+                    </LinearGradient>
 
                     <View style={styles.statsBox}>
-                        <Text style={styles.statsText}>Total Attempts: {attempts}</Text>
-                        <Text style={styles.statsText}>Errors: {failures}</Text>
+                        <LinearGradient
+                            colors={['rgba(255,255,255,0.95)', 'rgba(249,250,251,0.95)']}
+                            style={styles.statsBoxGradient}
+                        >
+                            <Ionicons name="flash" size={18} color={COLORS.neonYellow} />
+                            <Text style={styles.statsText}>{attempts}</Text>
+                        </LinearGradient>
                     </View>
-
-                    <Pressable
-                        onPress={nextLevel}
-                        style={({ pressed }) => [globalstyles.Btn, { width: '80%', opacity: pressed ? 0.7 : 1 }]}
-                    >
-                        <Card backgroundColor="#ACFEDB">
-                            <Text style={globalstyles.textStyle}>Continue to Level {level + 1}</Text>
-                        </Card>
-                    </Pressable>
-
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 20 }}>
-                        <Text style={{ color: '#911', fontWeight: 'bold' }}>Exit to Menu</Text>
-                    </TouchableOpacity>
                 </View>
-            )}
-        </View>
+
+                {/* Cards Grid */}
+                <ScrollView
+                    contentContainerStyle={styles.grid}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {cards.map((card, index) => {
+                        const isFlipped = flippedIndices.includes(index) || matchedPairs.includes(card.content);
+                        return (
+                            <MemoryCard
+                                key={index}
+                                card={card}
+                                index={index}
+                                isFlipped={isFlipped}
+                                onPress={() => handleFlip(index)}
+                                cardSize={cardSize}
+                            />
+                        );
+                    })}
+                </ScrollView>
+
+                {/* Results Modal */}
+                {showResults && (
+                    <View style={styles.resultsOverlay}>
+                        <LinearGradient
+                            colors={[COLORS.successStart, COLORS.successEnd]}
+                            style={styles.resultsBox}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                        >
+                            <View style={styles.resultsIconWrap}>
+                                <Text style={styles.resultsIcon}>🎉</Text>
+                            </View>
+
+                            <Text style={styles.congratsText}>Level {level} Cleared!</Text>
+                            <Text style={styles.congratsSubtext}>Amazing Memory!</Text>
+
+                            <View style={styles.statsContainer}>
+                                <View style={styles.statItem}>
+                                    <Text style={styles.statValue}>{attempts}</Text>
+                                    <Text style={styles.statLabel}>Total Moves</Text>
+                                </View>
+                                <View style={styles.statDivider} />
+                                <View style={styles.statItem}>
+                                    <Text style={styles.statValue}>{failures}</Text>
+                                    <Text style={styles.statLabel}>Errors</Text>
+                                </View>
+                            </View>
+
+                            <Pressable
+                                onPress={nextLevel}
+                                style={styles.nextBtnWrapper}
+                            >
+                                <LinearGradient
+                                    colors={['#FFFFFF', '#F9FAFB']}
+                                    style={styles.nextBtn}
+                                >
+                                    <Text style={styles.nextBtnText}>Continue to Level {level + 1}</Text>
+                                    <Ionicons name="arrow-forward" size={24} color={COLORS.successStart} />
+                                </LinearGradient>
+                            </Pressable>
+
+                            <TouchableOpacity
+                                onPress={() => navigation.goBack()}
+                                style={styles.exitBtn}
+                            >
+                                <View style={styles.exitBtnInner}>
+                                    <Ionicons name="home-outline" size={20} color="rgba(255,255,255,0.9)" style={{ marginRight: 6 }} />
+                                    <Text style={styles.exitBtnText}>Back to Menu</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </LinearGradient>
+                    </View>
+                )}
+
+                {showConfetti && (
+                    <ConfettiCannon
+                        count={200}
+                        origin={{ x: SCREEN_WIDTH / 2, y: -20 }}
+                        fadeOut={true}
+                    />
+                )}
+            </LinearGradient>
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: COLORS.bgStart,
+    },
+    container: {
+        flex: 1,
+        paddingHorizontal: 16,
+    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
-        paddingHorizontal: 5,
+        marginTop: 12,
+        marginBottom: 20,
+    },
+    backBtn: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        overflow: 'hidden',
+        elevation: 6,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    backBtnGradient: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1.5,
+        borderColor: "rgba(255,255,255,0.3)",
+        borderRadius: 24,
+    },
+    levelBadge: {
+        paddingHorizontal: 28,
+        paddingVertical: 12,
+        borderRadius: 24,
+        elevation: 8,
+        shadowColor: COLORS.primaryEnd,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+    },
+    levelText: {
+        color: COLORS.textWhite,
+        fontSize: 20,
+        fontWeight: '900',
+        letterSpacing: 1,
+        textShadowColor: "rgba(0,0,0,0.3)",
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
+    },
+    statsBox: {
+        borderRadius: 16,
+        overflow: 'hidden',
+        elevation: 6,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+    },
+    statsBoxGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        borderWidth: 2,
+        borderColor: COLORS.neonYellow,
+        borderRadius: 16,
+    },
+    statsText: {
+        fontSize: 18,
+        fontWeight: '900',
+        color: COLORS.secondaryStart,
     },
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        paddingVertical: 10,
+        paddingVertical: 20,
+        paddingBottom: 40,
     },
-    card: {
+    cardContainer: {
         margin: CARD_MARGIN,
+        perspective: 1000,
+    },
+    cardInner: {
+        flex: 1,
+        position: 'relative',
+    },
+    cardFace: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        backfaceVisibility: 'hidden',
+        borderRadius: 16,
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    cardBack: {
+        zIndex: 2,
+    },
+    cardFront: {
+        zIndex: 1,
+    },
+    cardGradient: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 8,
-        elevation: 3,
-        shadowColor: '#789134',
-        shadowOffset: { width: 1, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
+        borderWidth: 3,
+        borderColor: 'rgba(255,255,255,0.4)',
+        borderRadius: 16,
+        overflow: 'hidden',
+        position: 'relative',
     },
-    cardHidden: {
-        backgroundColor: '#784575',
+    cardInnerGlow: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '30%',
+        backgroundColor: 'rgba(255,255,255,0.25)',
     },
-    cardFlipped: {
-        backgroundColor: '#fff',
-        borderWidth: 2,
-        borderColor: '#ACFEDB',
+    cardQuestion: {
+        color: COLORS.textWhite,
+        fontWeight: '900',
+        textShadowColor: "rgba(0,0,0,0.3)",
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
+        zIndex: 1,
     },
-    cardText: {
+    cardEmoji: {
         textAlign: 'center',
+        zIndex: 1,
     },
     resultsOverlay: {
         position: 'absolute',
@@ -243,34 +581,116 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(250, 202, 247, 0.98)',
+        backgroundColor: 'rgba(0,0,0,0.75)',
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 20,
         zIndex: 100,
     },
-    confetti: {
-        fontSize: 40,
-        marginBottom: 10,
+    resultsBox: {
+        width: '100%',
+        maxWidth: 400,
+        padding: 32,
+        borderRadius: 32,
+        alignItems: 'center',
+        elevation: 20,
+        borderWidth: 3,
+        borderColor: 'rgba(255,255,255,0.4)',
+    },
+    resultsIconWrap: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: 'rgba(255,255,255,0.25)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        borderWidth: 3,
+        borderColor: 'rgba(255,255,255,0.4)',
+    },
+    resultsIcon: {
+        fontSize: 56,
     },
     congratsText: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        fontSize: 30,
+        fontWeight: '900',
+        color: COLORS.textWhite,
+        marginBottom: 6,
         textAlign: 'center',
-        marginBottom: 20,
+        textShadowColor: "rgba(0,0,0,0.3)",
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
     },
-    statsBox: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 10,
-        width: '80%',
-        marginBottom: 30,
+    congratsSubtext: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: 'rgba(255,255,255,0.9)',
+        marginBottom: 24,
+    },
+    statsContainer: {
+        flexDirection: 'row',
         alignItems: 'center',
-        elevation: 5,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 28,
+        width: '100%',
     },
-    statsText: {
-        fontSize: 16,
-        marginVertical: 4,
-    }
+    statItem: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    statValue: {
+        fontSize: 36,
+        fontWeight: '900',
+        color: COLORS.textWhite,
+        marginBottom: 4,
+    },
+    statLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: 'rgba(255,255,255,0.85)',
+    },
+    statDivider: {
+        width: 2,
+        height: 50,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+    },
+    nextBtnWrapper: {
+        width: '100%',
+        borderRadius: 30,
+        overflow: 'hidden',
+        marginBottom: 12,
+        elevation: 8,
+    },
+    nextBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        height: 64,
+        borderWidth: 2,
+        borderColor: 'rgba(16, 185, 129, 0.3)',
+        borderRadius: 30,
+    },
+    nextBtnText: {
+        color: COLORS.successStart,
+        fontSize: 20,
+        fontWeight: '900',
+    },
+    exitBtn: {
+        paddingVertical: 12,
+    },
+    exitBtnInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    exitBtnText: {
+        color: 'rgba(255,255,255,0.9)',
+        fontSize: 17,
+        fontWeight: '700',
+    },
 });
 
 export default MemoryGameScreen;

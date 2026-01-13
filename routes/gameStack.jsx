@@ -15,6 +15,7 @@ import AbacusCategoryScreen from '../games/Abacus/AbacusCategoryScreen';
 import AbacusLevelSelectionScreen from '../games/Abacus/AbacusLevelSelectionScreen';
 import AbacusGameScreen from '../games/Abacus/AbacusGameScreen';
 import SpeakAndLearnScreen from '../games/SpeakAndLearn/SpeakAndLearnScreen';
+import ShapeTapGameScreen from '../games/ShapeTapGame/ShapeTapGameScreen';
 
 
 const Stack = createStackNavigator();
@@ -110,6 +111,11 @@ const GameStack = () => {
                 name="SpeakAndLearn"
                 component={SpeakAndLearnScreen}
                 options={{ title: 'Speak & Learn', headerShown: false }}
+            />
+            <Stack.Screen
+                name="ShapeTap"
+                component={ShapeTapGameScreen}
+                options={{ title: 'Shape Tap', headerShown: false }}
             />
 
         </Stack.Navigator>

@@ -44,6 +44,23 @@ export const ToggleBtn = ({ name, text }) => {
     );
 };
 
+export const FabToggleBtn = () => {
+    const { modelOpen, setModelOpen } = useContext(ModelContext);
+
+    return (
+        <Pressable
+            onPress={() => setModelOpen(!modelOpen)}
+            style={({ pressed }) => [
+                styles.fab,
+                pressed && styles.fabPressed,
+            ]}
+            accessibilityLabel="Add new review"
+        >
+            <MaterialIcons name="add" size={28} color="#FFF" />
+        </Pressable>
+    );
+};
+
 ToggleBtn.propTypes = {
     name: PropTypes.string.isRequired,
     text: PropTypes.string.isRequired,
@@ -89,6 +106,29 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         fontSize: 24,
         color: '#967474',
+    },
+    fab: {
+        position: 'absolute',
+        bottom: 24,
+        right: 24,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: '#4F46E5',
+        justifyContent: 'center',
+        alignItems: 'center',
+
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 8,
+
+        zIndex: 50,
+    },
+
+    fabPressed: {
+        transform: [{ scale: 0.94 }],
     },
 });
 

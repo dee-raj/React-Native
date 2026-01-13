@@ -6,7 +6,7 @@ A premium **React Native (Expo)** application that combines a robust **Mini Game
 
 ## 🚀 The Games Hub
 
-Experience six classic logic and puzzle games, all modernized with vibrant visuals and intelligent gameplay.
+Experience nine classic logic and learning games, all modernized with vibrant visuals and intelligent gameplay.
 
 ### 1. Tic Tac Toe ⭕❌
 - **Neon Aesthetic**: High-contrast, glowing UI for a modern feel.
@@ -38,14 +38,30 @@ Experience six classic logic and puzzle games, all modernized with vibrant visua
 - **O(1) Win Check**: Instant validation of path connections and board fill.
 - **Vibrant Pipes**: Draw colorful connecting lines without crossing paths.
 
+### 7. Abacus Math 🧮
+- **Mental Arithmetic**: Practice math using a digital abacus with realistic bead physics.
+- **Multiple Modes**: Addition, subtraction, and multiplication levels.
+- **Educational UI**: Designed to mirror traditional learning tools.
+
+### 8. Speak & Learn 🔊
+- **Interactive Audio**: Uses **Expo-Speech** for high-quality pronunciation of letters and numbers.
+- **Kids-First Design**: Massive typography and high-contrast colors for accessibility.
+- **Auto-Play**: Automatically cycles through characters for hands-free learning.
+
+### 9. Shape Tap ✨
+- **Saturated UI**: Modern, vibrant colors designed to engage children.
+- **Celebrating Success**: Animated confetti and auditory praise on correct taps.
+- **Randomized Learning**: Shuffles shapes every round to reinforce recognition.
+
 ---
 
 ## 🎬 Review Features
 
-In addition to games, the app includes a dedicated review system:
-- **Comprehensive Fields**: Add reviews for movies or web series with names, ratings, and detailed descriptions.
-- **Form Validation**: Robust validation using **Yup** to ensure high-quality data.
-- **Dynamic List**: View and manage your collection of reviews in a clean, scrollable interface.
+In addition to games, the app includes a dedicated review system with a **premium design overhaul**:
+- **Modern UI**: Refined card layouts, elegant typography, and a new **Floating Action Button (FAB)** for adding reviews.
+- **Linear Gradients**: Beautiful color transitions across About, Settings, and Home screens.
+- **Form Validation**: Robust validation using **Yup** with real-time feedback and success modals.
+- **Persistent Data**: Your movie and series reviews are saved securely for offline viewing.
 
 ---
 
@@ -64,11 +80,13 @@ In addition to games, the app includes a dedicated review system:
 ## 🛠️ Technologies Used
 
 - **React Native (Expo)**: Cross-platform mobile framework.
-- **React Navigation**: Multi-level navigation including Animated Drawer and Stack.
+- **React Navigation**: Multi-level navigation including Stack and custom Drawer.
 - **AsyncStorage**: Persistent offline storage for game progress and high scores.
+- **Expo Speech**: Integrated Text-to-Speech (TTS) for educational games.
+- **Expo Linear Gradient**: Seamless color transitions for a premium aesthetic.
 - **Confetti-Cannon**: Dynamic celebratory effects on level completion.
-- **Yup & Formik**: Structure and validation for the review system.
-- **Animated API**: Custom animations for high-quality transitions.
+- **Yup & Formik**: Robust form handling and schema-based validation.
+- **Animated API**: Custom high-precision animations for gameplay and UI transitions.
 
 ---
 

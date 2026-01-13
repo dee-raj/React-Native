@@ -14,142 +14,170 @@ const ReviewDetails = ({ route }) => {
 
     const getImg = (rating) => {
         if (rating < 1 || rating > 10) return MyImages.heart;
-        else if (rating <= 2) return MyImages.ratings[1];
-        else if (rating <= 4) return MyImages.ratings[2];
-        else if (rating <= 6) return MyImages.ratings[3];
-        else if (rating <= 8) return MyImages.ratings[4];
-        else return MyImages.ratings[5];
+        if (rating <= 2) return MyImages.ratings[1];
+        if (rating <= 4) return MyImages.ratings[2];
+        if (rating <= 6) return MyImages.ratings[3];
+        if (rating <= 8) return MyImages.ratings[4];
+        return MyImages.ratings[5];
     };
 
     if (!title || !review) {
         return (
-            <View style={styles.container}>
+            <View style={styles.center}>
                 <Text style={styles.errorText}>Review details are not available.</Text>
             </View>
         );
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Card>
-                <View style={styles.header}>
-                    <Text style={styles.title}>{title}</Text>
-                    <View style={styles.ratingBox}>
-                        <Text style={styles.rating}>Rating: {rating ? `${rating}/10` : 'N/A'}</Text>
-                        <Image
-                            source={getImg(Math.round(rating))}
-                            style={styles.ratingImage}
-                            accessible={true}
-                            accessibilityLabel={`Rating image for ${rating} out of 10`}
-                        />
+        <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+            {/* ---------- Header Card ---------- */}
+            <View style={styles.headerCard}>
+                <Text style={styles.title}>{title}</Text>
+
+                <View style={styles.ratingRow}>
+                    <View style={styles.ratingBadge}>
+                        <Text style={styles.ratingText}>
+                            {rating ? `${rating}/10` : 'N/A'}
+                        </Text>
                     </View>
-                    <Text style={styles.reviewer}>Reviewed by: {reviewer}</Text>
-                    <Text style={styles.date}>Date: {date}</Text>
+
+                    <Image
+                        source={getImg(Math.round(rating))}
+                        style={styles.ratingImage}
+                        accessibilityLabel={`Rating image for ${rating} out of 10`}
+                    />
                 </View>
 
-                <View style={styles.reviewContainer}>
-                    <Text style={styles.reviewLabel}>Review:</Text>
-                    <Text style={styles.reviewText}>{review}</Text>
+                <View style={styles.metaRow}>
+                    <Text style={styles.metaText}>👤 {reviewer}</Text>
+                    {date && <Text style={styles.metaText}>📅 {date}</Text>}
                 </View>
+            </View>
 
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>Thank you for reading!</Text>
-                </View>
-            </Card>
+            {/* ---------- Review Card ---------- */}
+            <View style={styles.reviewCard}>
+                <Text style={styles.sectionTitle}>Review</Text>
+                <Text style={styles.reviewText}>{review}</Text>
+            </View>
+
+            {/* ---------- Footer ---------- */}
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>Thanks for reading ✨</Text>
+            </View>
         </ScrollView>
     );
 };
 
 export default ReviewDetails;
 
+/* -------------------- Styles -------------------- */
 const styles = StyleSheet.create({
     container: {
-        flexGrow: 1,
         padding: 16,
-        backgroundColor: '#BAAACA',
+        backgroundColor: '#F1F5F9',
     },
-    header: {
-        backgroundColor: '#FFF',
-        borderRadius: 8,
+
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    /* Header */
+    headerCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
         padding: 16,
         marginBottom: 16,
-        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        elevation: 4,
     },
+
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 8,
-        color: '#333',
+        fontWeight: '700',
+        color: '#0F172A',
+        marginBottom: 12,
     },
-    ratingBox: {
+
+    ratingRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 12,
     },
-    rating: {
-        fontSize: 18,
-        color: '#FFD700',
-        marginRight: 8,
+
+    ratingBadge: {
+        backgroundColor: '#4F46E5',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
     },
+
+    ratingText: {
+        color: '#FFFFFF',
+        fontWeight: '700',
+        fontSize: 14,
+    },
+
     ratingImage: {
-        width: 95,
-        height: 35,
+        width: 90,
+        height: 36,
         resizeMode: 'contain',
     },
-    reviewer: {
-        fontSize: 16,
-        fontStyle: 'italic',
-        color: '#555',
-        marginBottom: 4,
+
+    metaRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 4,
     },
-    date: {
-        fontSize: 14,
-        color: '#888',
-        marginBottom: 12,
+
+    metaText: {
+        fontSize: 13,
+        color: '#475569',
     },
-    reviewContainer: {
-        backgroundColor: '#FFF',
-        borderRadius: 8,
+
+    /* Review */
+    reviewCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
         padding: 16,
-        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        marginBottom: 16,
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 3,
     },
-    reviewLabel: {
-        fontSize: 20,
-        fontWeight: 'bold',
+
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
         marginBottom: 8,
-        color: '#333',
+        color: '#1E293B',
     },
+
     reviewText: {
-        fontSize: 16,
+        fontSize: 15,
         lineHeight: 22,
-        color: '#333',
+        color: '#334155',
     },
+
+    /* Footer */
     footer: {
         marginTop: 20,
         alignItems: 'center',
-        paddingVertical: 10,
-        backgroundColor: '#FFF',
-        borderRadius: 8,
-        elevation: 1,
     },
+
     footerText: {
-        fontSize: 14,
+        fontSize: 13,
+        color: '#64748B',
         fontStyle: 'italic',
-        color: '#555',
     },
+
     errorText: {
         fontSize: 16,
-        color: 'red',
-        textAlign: 'center',
-        marginTop: 20,
+        color: '#DC2626',
     },
 });

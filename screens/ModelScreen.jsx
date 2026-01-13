@@ -1,4 +1,14 @@
-import { Button, Modal, ScrollView, StyleSheet, Text, TextInput, View, TouchableWithoutFeedback, Keyboard, Pressable } from 'react-native';
+import {
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+    TouchableWithoutFeedback,
+    Keyboard,
+    Pressable,
+} from 'react-native';
 import React, { useContext, useState } from 'react';
 import { Formik } from 'formik';
 import { ToggleBtn } from '../shared/drawerIcon';
@@ -6,36 +16,36 @@ import { ModelContext, ReviewsContext } from '../shared/ReviewsData';
 import { globalstyles } from '../style/GlobalStyle';
 import * as Yup from 'yup';
 
+/* -------------------- Validation -------------------- */
 const ReviewSchema = Yup.object({
-    title: Yup.string()
-        .trim()
-        .required('Title is required')
-        .min(4, 'Must be at least 4 characters long'),
-    type: Yup.string()
-        .trim()
-        .required('Type is required')
-        .min(4, 'Must be at least 4 characters long'),
-    rating: Yup.number()
-        .required('Rating is required')
-        .min(1, 'Rating must be at least 1')
-        .max(10, 'Rating must be at most 10'),
-    reviewer: Yup.string()
-        .required('Reviewer name is required')
-        .trim()
-        .min(3, 'Must be at least 3 characters long'),
-    review: Yup.string()
-        .trim()
-        .required('Review is required')
-        .min(10, 'Must be at least 10 characters long'),
+    title: Yup.string().trim().min(4).required('Title is required'),
+    type: Yup.string().trim().min(4).required('Type is required'),
+    rating: Yup.number().min(1).max(10).required('Rating is required'),
+    reviewer: Yup.string().trim().min(3).required('Reviewer name is required'),
+    review: Yup.string().trim().min(10).required('Review is required'),
 });
 
+/* -------------------- Reusable Field -------------------- */
+const FormField = ({ label, error, touched, children }) => (
+    <View style={styles.fieldContainer}>
+        <Text style={styles.label}>{label}</Text>
+        {children}
+        {touched && error ? (
+            <Text style={styles.errorText}>{error}</Text>
+        ) : (
+            <Text style={styles.helperText}> </Text>
+        )}
+    </View>
+);
+
+/* -------------------- Form -------------------- */
 const MyReactNativeForm = () => {
     const { addReview } = useContext(ReviewsContext);
     const [submittedValues, setSubmittedValues] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
 
     return (
-        <ScrollView style={{ marginTop: 20 }}>
+        <ScrollView showsVerticalScrollIndicator={false}>
             <Formik
                 initialValues={{
                     title: '',
@@ -47,85 +57,93 @@ const MyReactNativeForm = () => {
                 validationSchema={ReviewSchema}
                 onSubmit={(values, { resetForm }) => {
                     addReview(values);
-                    resetForm();
                     setSubmittedValues(values);
+                    resetForm();
                     setModalVisible(true);
                 }}
             >
                 {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
-                    <View style={styles.formStyle}>
-                        <TextInput
-                            placeholder='Title of Movie or Web series'
-                            onChangeText={handleChange('title')}
-                            onBlur={handleBlur('title')}
-                            value={values.title}
-                            style={[styles.input, touched.title && errors.title && styles.errorInput]}
-                        />
-                        <Text style={globalstyles.errorStyle}>{touched.title && errors.title}</Text>
+                    <View style={styles.formCard}>
+                        <FormField label="Title" error={errors.title} touched={touched.title}>
+                            <TextInput
+                                placeholder="Movie or Web Series"
+                                style={[styles.input, touched.title && errors.title && styles.errorInput]}
+                                onChangeText={handleChange('title')}
+                                onBlur={handleBlur('title')}
+                                value={values.title}
+                            />
+                        </FormField>
 
-                        <TextInput
-                            placeholder='Type (e.g., Movie, Series)'
-                            onChangeText={handleChange('type')}
-                            onBlur={handleBlur('type')}
-                            value={values.type}
-                            style={[styles.input, touched.type && errors.type && styles.errorInput]}
-                        />
-                        <Text style={globalstyles.errorStyle}>{touched.type && errors.type}</Text>
+                        <FormField label="Type" error={errors.type} touched={touched.type}>
+                            <TextInput
+                                placeholder="Movie, Series, Anime"
+                                style={[styles.input, touched.type && errors.type && styles.errorInput]}
+                                onChangeText={handleChange('type')}
+                                onBlur={handleBlur('type')}
+                                value={values.type}
+                            />
+                        </FormField>
 
-                        <TextInput
-                            placeholder='Rating (out of 10)'
-                            onChangeText={handleChange('rating')}
-                            onBlur={handleBlur('rating')}
-                            value={values.rating}
-                            style={[styles.input, touched.rating && errors.rating && styles.errorInput]}
-                            keyboardType="numeric"
-                        />
-                        <Text style={globalstyles.errorStyle}>{touched.rating && errors.rating}</Text>
+                        <FormField label="Rating (1–10)" error={errors.rating} touched={touched.rating}>
+                            <TextInput
+                                placeholder="e.g. 8"
+                                keyboardType="numeric"
+                                style={[styles.input, touched.rating && errors.rating && styles.errorInput]}
+                                onChangeText={handleChange('rating')}
+                                onBlur={handleBlur('rating')}
+                                value={values.rating}
+                            />
+                        </FormField>
 
-                        <TextInput
-                            placeholder='Reviewer Name'
-                            onChangeText={handleChange('reviewer')}
-                            onBlur={handleBlur('reviewer')}
-                            value={values.reviewer}
-                            style={[styles.input, touched.reviewer && errors.reviewer && styles.errorInput]}
-                        />
-                        <Text style={globalstyles.errorStyle}>{touched.reviewer && errors.reviewer}</Text>
+                        <FormField label="Reviewer Name" error={errors.reviewer} touched={touched.reviewer}>
+                            <TextInput
+                                placeholder="Your name"
+                                style={[styles.input, touched.reviewer && errors.reviewer && styles.errorInput]}
+                                onChangeText={handleChange('reviewer')}
+                                onBlur={handleBlur('reviewer')}
+                                value={values.reviewer}
+                            />
+                        </FormField>
 
-                        <TextInput
-                            placeholder='Review'
-                            onChangeText={handleChange('review')}
-                            onBlur={handleBlur('review')}
-                            value={values.review}
-                            style={[styles.input, touched.review && errors.review && styles.errorInput]}
-                            multiline
-                            numberOfLines={4}
-                        />
-                        <Text style={globalstyles.errorStyle}>{touched.review && errors.review}</Text>
+                        <FormField label="Review" error={errors.review} touched={touched.review}>
+                            <TextInput
+                                placeholder="Write your thoughts..."
+                                multiline
+                                numberOfLines={4}
+                                style={[
+                                    styles.input,
+                                    styles.textArea,
+                                    touched.review && errors.review && styles.errorInput,
+                                ]}
+                                onChangeText={handleChange('review')}
+                                onBlur={handleBlur('review')}
+                                value={values.review}
+                            />
+                        </FormField>
 
-                        {/* <Button onPress={handleSubmit} title="Submit" /> */}
                         <Pressable style={styles.submitButton} onPress={handleSubmit}>
-                            <Text style={styles.submitButtonText}>Submit</Text>
+                            <Text style={styles.submitButtonText}>Submit Review</Text>
                         </Pressable>
                     </View>
                 )}
             </Formik>
 
-            <Modal visible={modalVisible} transparent animationType="fade">
+            {/* ---------- Success Modal ---------- */}
+            <Modal visible={modalVisible} transparent animationType="slide">
                 <View style={styles.modalOverlay}>
-                    <View style={styles.SuccessModalContainer}>
-                        <Text style={styles.modalTitle}>Record Submitted!</Text>
+                    <View style={styles.successModal}>
+                        <Text style={styles.modalTitle}>🎉 Review Submitted</Text>
+
                         <ScrollView>
-                            {submittedValues ? (
+                            {submittedValues &&
                                 Object.entries(submittedValues).map(([key, value]) => (
-                                    <View key={key} style={styles.valueSum}>
-                                        <Text style={[styles.modalTitle, { color: '#FACEFB', textTransform: 'capitalize' }]}>{key}: </Text>
-                                        <Text style={styles.modalMessage}>{value}</Text>
+                                    <View key={key} style={styles.summaryRow}>
+                                        <Text style={styles.summaryKey}>{key}</Text>
+                                        <Text style={styles.summaryValue}>{value}</Text>
                                     </View>
-                                ))
-                            ) : (
-                                <Text style={styles.modalMessage}>No data available.</Text>
-                            )}
+                                ))}
                         </ScrollView>
+
                         <Pressable style={styles.doneButton} onPress={() => setModalVisible(false)}>
                             <Text style={styles.doneButtonText}>Done</Text>
                         </Pressable>
@@ -134,123 +152,187 @@ const MyReactNativeForm = () => {
             </Modal>
         </ScrollView>
     );
-}
+};
 
+/* -------------------- Screen -------------------- */
 const ModelScreen = () => {
     const { modelOpen, setModelOpen } = useContext(ModelContext);
+
     return (
-        <Modal visible={modelOpen} animationType={'slide'}>
+        <Modal visible={modelOpen} animationType="slide">
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.modelContainer}>
-                    <Text style={globalstyles.textStyle}>Here you can add new reviews</Text>
-                    <ToggleBtn name={'close'} text={'Close Model'} onPress={() => setModelOpen(false)} />
+                <View style={styles.screen}>
+                    <Text style={globalstyles.textStyle}>Add New Review</Text>
+                    {/* <ToggleBtn name="close" text="Close" onPress={() => setModelOpen(false)} /> */}
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.closeBtn,
+                            pressed && styles.closeBtnPressed,
+                        ]}
+                        onPress={() => setModelOpen(false)}
+                        accessibilityLabel="Close add review modal"
+                    >
+                        <Text style={styles.closeIcon}>✕</Text>
+                    </Pressable>
+
                     <MyReactNativeForm />
                 </View>
             </TouchableWithoutFeedback>
         </Modal>
     );
-}
+};
 
 export default ModelScreen;
 
+/* -------------------- Styles -------------------- */
 const styles = StyleSheet.create({
-    modelContainer: {
+    screen: {
         flex: 1,
-        marginTop: 10,
-        marginHorizontal: 10,
-        backgroundColor: '#FAEBCA',
-        paddingVertical: 10,
-        paddingHorizontal: 10,
-        borderRadius: 10,
+        backgroundColor: '#F8FAFC',
+        padding: 16,
+        paddingTop: 56, // 👈 prevents overlap
     },
-    formStyle: {
-        paddingVertical: 10,
-        backgroundColor: '#ffeedd',
-        shadowOffset: { width: 1, height: 2 },
-        shadowColor: '#435432',
-        shadowRadius: 10,
-        shadowOpacity: 0.9,
-        marginHorizontal: 10,
-        paddingHorizontal: 20,
-        borderRadius: 15,
-        gap: 10,
-    },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 5,
-        paddingHorizontal: 10,
-        borderRadius: 5,
-    },
-    errorInput: {
-        borderColor: 'red', // Change border color on error
-        borderWidth: 2,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    closeBtn: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#E5E7EB',
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 50,
     },
-    SuccessModalContainer: {
-        width: '90%',
-        padding: 10,
-        backgroundColor: '#FEFEEE',
-        borderRadius: 10,
-        alignItems: 'center',
-        shadowColor: '#FEAACC',
-        shadowOffset: { width: 2, height: 4 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-        elevation: 5,
-        justifyContent: 'space-between',
+
+    closeBtnPressed: {
+        transform: [{ scale: 0.92 }],
+        backgroundColor: '#D1D5DB',
     },
-    modalTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        color: '#34FE90',
-    },
-    modalMessage: {
+
+    closeIcon: {
         fontSize: 18,
-        textAlign: 'center',
-        color: '#546764',
-        fontFamily: 'Roboto',
+        fontWeight: '700',
+        color: '#374151',
     },
-    valueSum: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
+
+    formCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 16,
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
+    },
+
+    fieldContainer: {
+        marginBottom: 12,
+    },
+
+    label: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#475569',
+        marginBottom: 4,
+    },
+
+    helperText: {
+        fontSize: 11,
+        color: 'transparent',
+    },
+
+    errorText: {
+        fontSize: 11,
+        color: '#DC2626',
+        marginTop: 2,
+    },
+
+    input: {
+        height: 44,
         borderWidth: 1,
-        borderColor: '#895794',
+        borderColor: '#CBD5E1',
         borderRadius: 10,
-        padding: 10,
-        marginBottom: 5,
-        flexWrap: 'wrap',
+        paddingHorizontal: 12,
+        backgroundColor: '#FFF',
+        fontSize: 14,
     },
+
+    textArea: {
+        height: 90,
+        textAlignVertical: 'top',
+    },
+
+    errorInput: {
+        borderColor: '#DC2626',
+        backgroundColor: '#FEF2F2',
+    },
+
     submitButton: {
-        backgroundColor: '#56AF78',
-        padding: 10,
-        borderRadius: 5,
+        backgroundColor: '#4F46E5',
+        paddingVertical: 12,
+        borderRadius: 12,
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 8,
     },
+
     submitButtonText: {
-        color: '#fff',
+        color: '#FFF',
+        fontWeight: '700',
         fontSize: 16,
-        fontWeight: 'bold',
     },
+
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        justifyContent: 'flex-end',
+    },
+
+    successModal: {
+        backgroundColor: '#FFF',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 20,
+        maxHeight: '70%',
+    },
+
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+
+    summaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
+
+    summaryKey: {
+        fontWeight: '600',
+        color: '#334155',
+        textTransform: 'capitalize',
+    },
+
+    summaryValue: {
+        color: '#475569',
+        flexShrink: 1,
+        textAlign: 'right',
+    },
+
     doneButton: {
-        backgroundColor: '#28FA45',
-        padding: 10,
-        borderRadius: 5,
+        backgroundColor: '#22C55E',
+        paddingVertical: 12,
+        borderRadius: 12,
+        marginTop: 16,
         alignItems: 'center',
-        marginTop: 10,
     },
+
     doneButtonText: {
-        color: '#fff',
+        color: '#FFF',
+        fontWeight: '700',
         fontSize: 16,
-        fontWeight: 'bold',
     },
 });

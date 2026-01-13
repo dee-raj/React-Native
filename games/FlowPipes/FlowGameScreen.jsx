@@ -137,8 +137,12 @@ const FlowGameScreen = ({ navigation, route }) => {
     const configRef = useRef(null);
     const gameWonRef = useRef(false);
     const filledCountRef = useRef(0);
+    const startTimeRef = useRef(Date.now());
+    const levelRef = useRef(level);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Sync refs
+    useEffect(() => { levelRef.current = level; }, [level]);
     useEffect(() => { gridRef.current = grid; }, [grid]);
     useEffect(() => { pathsRef.current = paths; }, [paths]);
     useEffect(() => { activePathIdRef.current = activePathId; }, [activePathId]);
@@ -147,6 +151,12 @@ const FlowGameScreen = ({ navigation, route }) => {
     useEffect(() => { filledCountRef.current = filledCellsCount; }, [filledCellsCount]);
 
     const initGame = useCallback((lvl) => {
+        const now = Date.now();
+
+        startTimeRef.current = now;   // ✅ THIS is what matters
+        setStartTime(now);            // (optional, only for UI)
+        setTimeTaken(0);
+
         setLoading(true);
         setGrid([]);
         setPaths({});
@@ -172,7 +182,6 @@ const FlowGameScreen = ({ navigation, route }) => {
             setPaths({});
             setFilledCellsCount(initialFilled);
             filledCountRef.current = initialFilled;
-            setStartTime(Date.now());
             setLoading(false);
         }, 50);
     }, []);
@@ -180,10 +189,20 @@ const FlowGameScreen = ({ navigation, route }) => {
     useEffect(() => {
         const load = async () => {
             const saved = await AsyncStorage.getItem(LOG_KEY);
+            let completed = [];
+            let currentLevel = 1;
+
             if (saved) {
-                const { completed } = JSON.parse(saved);
-                setCompletedLevels(completed || []);
+                const parsed = JSON.parse(saved);
+                completed = parsed.completed || [];
+                currentLevel = parsed.currentLevel || 1;
             }
+
+            // Ensure all levels before startLevel are marked as completed
+            const preLevels = Array.from({ length: startLevel - 1 }, (_, i) => i + 1);
+            completed = Array.from(new Set([...completed, ...preLevels])).sort((a, b) => a - b);
+
+            setCompletedLevels(completed);
         };
         load();
         initGame(level);
@@ -309,37 +328,62 @@ const FlowGameScreen = ({ navigation, route }) => {
             onMoveShouldSetPanResponder: () => true,
             onPanResponderGrant: (evt) => handleTouch(evt.nativeEvent.pageX, evt.nativeEvent.pageY),
             onPanResponderMove: (evt) => handleTouch(evt.nativeEvent.pageX, evt.nativeEvent.pageY),
-            onPanResponderRelease: () => {
+            onPanResponderRelease: async () => {
                 const frozenActiveId = activePathIdRef.current;
                 setActivePathId(null);
                 activePathIdRef.current = null;
                 const finalPaths = pathsRef.current;
                 if (checkWin(finalPaths)) {
-                    const finalTime = Math.floor((Date.now() - startTime) / 1000);
+                    const finalTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
                     setTimeTaken(finalTime);
-                    setGameWon(true);
                     gameWonRef.current = true;
+                    setIsSaving(true);
+                    await saveProgress(levelRef.current);
+                    setIsSaving(false);
+                    setGameWon(true);
                     setShowConfetti(true);
-                    saveProgress();
                 }
             },
         })
     ).current;
 
-    const saveProgress = async () => {
+    const saveProgress = async (completedLevel) => {
         try {
             const saved = await AsyncStorage.getItem(LOG_KEY);
-            const { completed = [] } = saved ? JSON.parse(saved) : {};
-            const newCompleted = [...new Set([...completed, level])].sort((a, b) => a - b);
-            const nextLvl = level < MAX_LEVEL ? level + 1 : MAX_LEVEL;
-            await AsyncStorage.setItem(LOG_KEY, JSON.stringify({ currentLevel: nextLvl, completed: newCompleted }));
+            let completed = [];
+            let currentLvl = 1;
+
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                completed = parsed.completed || [];
+                currentLvl = parsed.currentLevel || 1;
+            }
+
+            // Mark the completed level
+            const newCompleted = Array.from(new Set([...completed, completedLevel])).sort((a, b) => a - b);
+
+            // If the completed level is the current unlock-limit, increment it
+            let nextUnlock = currentLvl;
+            if (completedLevel >= currentLvl) {
+                nextUnlock = Math.min(completedLevel + 1, MAX_LEVEL);
+            }
+
+            await AsyncStorage.setItem(
+                LOG_KEY,
+                JSON.stringify({ currentLevel: nextUnlock, completed: newCompleted })
+            );
+
             setCompletedLevels(newCompleted);
-        } catch (e) { console.error('Save Progress Error', e); }
+        } catch (e) {
+            console.error('Save Progress Error', e);
+        }
     };
 
     const nextLevel = () => {
         if (level < MAX_LEVEL) {
-            setLevel(prev => prev + 1);
+            const nl = level + 1;
+            setLevel(nl);
+            initGame(nl);
         } else {
             navigation.goBack();
         }
@@ -371,7 +415,7 @@ const FlowGameScreen = ({ navigation, route }) => {
                 </View>
                 <View style={styles.statBox}>
                     <Text style={styles.statLabel}>TIME</Text>
-                    <Text style={styles.statValue}>{formatTime(gameWon ? timeTaken : Math.floor((Date.now() - startTime) / 1000))}</Text>
+                    <Text style={styles.statValue}>{formatTime(gameWon ? timeTaken : Math.floor((Date.now() - startTimeRef.current) / 1000))}</Text>
                 </View>
             </View>
 
@@ -435,16 +479,24 @@ const FlowGameScreen = ({ navigation, route }) => {
                             <Text style={styles.statLabelLarge}>SOLVED IN</Text>
                             <Text style={styles.statValueLarge}>{formatTime(timeTaken)}</Text>
                         </View>
-                        <Pressable onPress={nextLevel} style={styles.modalBtn}>
+                        <Pressable onPress={nextLevel} style={[styles.modalBtn, { opacity: isSaving ? 0.5 : 1 }]} disabled={isSaving}>
                             <Card backgroundColor="#4caf50"><Text style={[globalstyles.textStyle, { color: '#fff' }]}>
-                                {level < MAX_LEVEL ? "Next Level" : "Finish"}
+                                {level < MAX_LEVEL ? (isSaving ? "Saving..." : "Next Level") : "Finish"}
                             </Text></Card>
                         </Pressable>
-                        <Pressable onPress={() => initGame(level)} style={[styles.modalBtn, { marginTop: 10 }]}>
+                        <Pressable onPress={() => initGame(level)} style={[styles.modalBtn, { marginTop: 10, opacity: isSaving ? 0.5 : 1 }]} disabled={isSaving}>
                             <Card backgroundColor="#784575"><Text style={[globalstyles.textStyle, { color: '#fff' }]}>Replay</Text></Card>
                         </Pressable>
-                        <Pressable onPress={() => navigation.goBack()} style={[styles.modalBtn, { marginTop: 10 }]}>
-                            <Text style={styles.menuText}>Back to Menu</Text>
+                        <Pressable
+                            onPress={() => {
+                                // If still saving, we wait? No, navigation.goBack() just needs to happen.
+                                // We can just rely on the fact that if they are in the modal, saveProgress has likely finished.
+                                navigation.goBack();
+                            }}
+                            style={[styles.modalBtn, { marginTop: 10, opacity: isSaving ? 0.5 : 1 }]}
+                            disabled={isSaving}
+                        >
+                            <Text style={styles.menuText}>{isSaving ? "Saving..." : "Back to Menu"}</Text>
                         </Pressable>
                     </View>
                 </View>

@@ -20,19 +20,58 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 const { width, height } = Dimensions.get("window");
 
-/* ---------- Background ---------- */
-const BackgroundBeads = () => {
+/* ---------- Modern Color Palette ---------- */
+const COLORS = {
+    // Rich background gradients
+    easyBgStart: "#667eea",
+    easyBgMid: "#764ba2",
+    easyBgEnd: "#f093fb",
+
+    hardBgStart: "#0F2027",
+    hardBgMid: "#203A43",
+    hardBgEnd: "#2C5364",
+
+    // Vibrant accents
+    primaryStart: "#F857A6",
+    primaryEnd: "#FF5858",
+
+    secondaryStart: "#667eea",
+    secondaryEnd: "#764ba2",
+
+    successStart: "#10B981",
+    successEnd: "#059669",
+
+    errorStart: "#FF6B6B",
+    errorEnd: "#EE5253",
+
+    // Neon accents
+    neonPurple: "#9333EA",
+    neonPink: "#F472B6",
+    neonCyan: "#06B6D4",
+    neonGreen: "#10B981",
+
+    // Text
+    textWhite: "#FFFFFF",
+    textDark: "#1F2937",
+    textGrey: "#94A3B8",
+};
+
+/* ---------- Animated Background Orbs ---------- */
+const BackgroundBeads = ({ isHardMode }) => {
     const beads = [
-        { top: 50, left: -20, size: 100, color: "#FF9F4333" },
-        { top: 200, right: -40, size: 150, color: "#48DBFB33" },
-        { bottom: 100, left: 40, size: 80, color: "#1DD1A133" },
-        { top: height * 0.4, right: 30, size: 60, color: "#FF6B6B33" },
+        { top: 50, left: -20, size: 140, colors: ["#F857A6", "#FF5858"] },
+        { top: 200, right: -40, size: 180, colors: ["#667eea", "#764ba2"] },
+        { bottom: 100, left: 40, size: 100, colors: ["#10B981", "#059669"] },
+        { top: height * 0.4, right: 30, size: 120, colors: ["#F472B6", "#EE5253"] },
+        { bottom: 200, right: 60, size: 90, colors: ["#06B6D4", "#0891B2"] },
     ];
+
     return (
         <View style={StyleSheet.absoluteFill}>
             {beads.map((b, i) => (
-                <View
+                <LinearGradient
                     key={i}
+                    colors={b.colors}
                     style={{
                         position: "absolute",
                         top: b.top,
@@ -42,12 +81,57 @@ const BackgroundBeads = () => {
                         width: b.size,
                         height: b.size,
                         borderRadius: b.size / 2,
-                        backgroundColor: b.color,
+                        opacity: isHardMode ? 0.15 : 0.25,
                     }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                 />
             ))}
         </View>
     );
+};
+
+const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+
+/* Subtraction: preserve decimal invariant (.0 / .5) */
+const generateSubtractionOptions = (ans) => {
+    const baseDecimal = ans % 1;
+    const baseInt = Math.floor(ans);
+    const OFFSETS = [-3, -2, -1, 1, 2, 3];
+
+    const distractors = OFFSETS
+        .slice(0, 3)
+        .map(o => baseInt + o + baseDecimal);
+
+    return shuffle([ans, ...distractors]);
+};
+
+/* Multiplication: small integer drift */
+const generateMultiplicationOptions = (ans) => {
+    const OFFSETS = [-3, -2, -1, 1, 2, 3];
+    const distractors = OFFSETS
+        .slice(0, 3)
+        .map(o => Math.max(1, ans + o));
+
+    return shuffle([ans, ...distractors]);
+};
+
+/* Division: wrong operands, not decimal noise */
+const generateDivisionOptions = (num1, num2, ans) => {
+    const candidates = [
+        num1 / (num2 + 1),
+        num1 / Math.max(1, num2 - 1),
+        (num1 + 1) / num2,
+        (num1 - 1) / num2,
+        parseFloat(ans.toFixed(1)),
+    ];
+
+    const distractors = candidates
+        .map(v => parseFloat(v.toFixed(2)))
+        .filter(v => v > 0 && v !== ans)
+        .slice(0, 3);
+
+    return shuffle([ans, ...distractors]);
 };
 
 /* ---------- Screen ---------- */
@@ -109,12 +193,12 @@ const AbacusGameScreen = ({ route, navigation }) => {
             ans = num1 + num2;
             q = `${num1} + ${num2}`;
         } else if (op === "-") {
-            num1 = Math.floor(Math.random() * range) + range / 2;
+            num1 = Math.floor(Math.random() * range) + range;
             num2 = Math.floor(Math.random() * num1) + 1;
             ans = num1 - num2;
             q = `${num1} - ${num2}`;
         } else if (op === "/") {
-            num1 = Math.floor(Math.random() * range) + range / 2;
+            num1 = Math.floor(Math.random() * range) + range;
             num2 = Math.floor(Math.random() * num1) + 1;
             ans = parseFloat((num1 / num2).toFixed(2));
             q = `${num1} / ${num2}`;
@@ -130,28 +214,19 @@ const AbacusGameScreen = ({ route, navigation }) => {
         setAnswer(ans);
 
         if (isMCQMode) {
-            const opts = new Set([ans]);
-            const isDivision = op === "/";
+            let opts = [];
 
-            while (opts.size < 4) {
-                let fake;
-
-                if (isDivision) {
-                    // Generate realistic decimal distractors near the true answer
-                    const variation = (Math.random() * 0.4 + 0.1) * (Math.random() < 0.5 ? -1 : 1);
-                    fake = parseFloat((ans + variation).toFixed(2));
-                } else {
-                    // For integer operations: +/- small variation
-                    const offset = Math.floor(Math.random() * (range / 2)) - range / 4;
-                    fake = Math.max(1, ans + offset);
-                }
-
-                // Avoid duplicates or negatives
-                if (fake > 0 && fake !== ans) opts.add(fake);
+            if (op === "-") {
+                opts = generateSubtractionOptions(ans);
+            } else if (op === "/") {
+                opts = generateDivisionOptions(num1, num2, ans);
+            } else if (op === "×") {
+                opts = generateMultiplicationOptions(ans);
+            } else {
+                opts = shuffle([ans, ans + 1, ans - 1, ans + 2]);
             }
 
-            // Sort & randomize slightly
-            setOptions([...opts].sort(() => Math.random() - 0.5));
+            setOptions(opts);
         }
 
         fadeAnim.setValue(0);
@@ -181,7 +256,6 @@ const AbacusGameScreen = ({ route, navigation }) => {
 
         if (correct) setScore(finalScore);
 
-        // 🔹 Feedback animation ONLY
         feedbackAnim.setValue(0);
         Animated.sequence([
             Animated.timing(feedbackAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
@@ -189,7 +263,6 @@ const AbacusGameScreen = ({ route, navigation }) => {
             Animated.timing(feedbackAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
         ]).start();
 
-        // 🔹 SINGLE progression point
         setTimeout(() => {
             setSelectedOption(null);
             setShowAnswer(false);
@@ -248,41 +321,59 @@ const AbacusGameScreen = ({ route, navigation }) => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <LinearGradient
-                colors={isHardMode ? ["#0F2027", "#203A43", "#2C5364"] : ["#F8F9FA", "#CFD5DB"]}
+                colors={
+                    isHardMode
+                        ? [COLORS.hardBgStart, COLORS.hardBgMid, COLORS.hardBgEnd]
+                        : [COLORS.easyBgStart, COLORS.easyBgMid, COLORS.easyBgEnd]
+                }
                 style={{ flex: 1 }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
             >
-                {isHardMode ? (
-                    <Animated.View
-                        style={[
-                            StyleSheet.absoluteFill,
-                            { opacity: fadeAnim, backgroundColor: "rgba(106,90,224,0.08)" },
-                        ]}
-                    >
-                        <BackgroundBeads />
-                    </Animated.View>
-                ) : (
-                    <BackgroundBeads />
-                )}
+                <BackgroundBeads isHardMode={isHardMode} />
+
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                        <Ionicons name="arrow-back" size={24} color="black" />
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        style={styles.backBtn}
+                        activeOpacity={0.7}
+                    >
+                        <LinearGradient
+                            colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
+                            style={styles.backBtnGradient}
+                        >
+                            <Ionicons name="arrow-back" size={26} color={COLORS.textWhite} />
+                        </LinearGradient>
                     </TouchableOpacity>
 
-                    <View style={[styles.levelBadge, { backgroundColor: isHardMode ? "#6A5AE0" : "#FF9F43" }]}>
+                    <LinearGradient
+                        colors={isHardMode ? [COLORS.neonPurple, "#A855F7"] : [COLORS.primaryStart, COLORS.primaryEnd]}
+                        style={styles.levelBadge}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                    >
                         <Text style={styles.levelBadgeText}>LEVEL {level}</Text>
-                    </View>
+                    </LinearGradient>
 
                     <View style={styles.scoreBox}>
-                        <Text style={styles.scoreText}>
-                            {currentQuestionIndex + 1}/{TOTAL_QUESTIONS}
-                        </Text>
+                        <LinearGradient
+                            colors={['#FFFFFF', '#F3F4F6']}
+                            style={styles.scoreBoxGradient}
+                        >
+                            <Text style={styles.scoreText}>
+                                {currentQuestionIndex + 1}/{TOTAL_QUESTIONS}
+                            </Text>
+                        </LinearGradient>
                     </View>
                 </View>
 
-                {/* Progress */}
+                {/* Progress Bar */}
                 <View style={styles.progressBarBg}>
-                    <View
+                    <LinearGradient
+                        colors={[COLORS.neonCyan, COLORS.neonGreen]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
                         style={[
                             styles.progressBarFill,
                             { width: `${((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100}%` },
@@ -297,19 +388,16 @@ const AbacusGameScreen = ({ route, navigation }) => {
                     <Animated.View
                         style={[
                             styles.questionCard,
-                            isHardMode && {
-                                backgroundColor: "#1B1B2F",
-                                borderWidth: 2,
-                                borderColor: "#6A5AE0",
-                                shadowColor: "#6A5AE0",
-                                shadowOpacity: 0.4,
-                                shadowRadius: 12,
-                            },
+                            isHardMode && styles.questionCardHard,
                             { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
                         ]}
                     >
-                        <Text style={[styles.questionText, { color: isHardMode ? "#FFFFFF" : "#2D3436" }]}>{question}</Text>
-                        <Text style={[styles.equalSign, { color: isHardMode ? "#A29BFE" : "#B2BEC3" }]}>= ?</Text>
+                        <Text style={[styles.questionText, { color: isHardMode ? COLORS.textWhite : COLORS.textDark }]}>
+                            {question}
+                        </Text>
+                        <Text style={[styles.equalSign, { color: isHardMode ? COLORS.neonPink : COLORS.textDark }]}>
+                            = ?
+                        </Text>
                     </Animated.View>
 
                     <View style={styles.answerArea}>
@@ -319,11 +407,11 @@ const AbacusGameScreen = ({ route, navigation }) => {
                                     const isSelected = selectedOption === opt;
                                     const isCorrect = opt === answer;
 
-                                    let bgColors = ["#48DBFB", "#2E86DE"];
+                                    let bgColors = [COLORS.secondaryStart, COLORS.secondaryEnd];
 
                                     if (showAnswer) {
-                                        if (isCorrect) bgColors = ["#1DD1A1", "#10AC84"];       // ✅ green
-                                        else if (isSelected) bgColors = ["#FF6B6B", "#EE5253"]; // ❌ red
+                                        if (isCorrect) bgColors = [COLORS.successStart, COLORS.successEnd];
+                                        else if (isSelected) bgColors = [COLORS.errorStart, COLORS.errorEnd];
                                     }
 
                                     return (
@@ -331,41 +419,52 @@ const AbacusGameScreen = ({ route, navigation }) => {
                                             key={i}
                                             disabled={showAnswer}
                                             style={styles.optionBtn}
+                                            activeOpacity={0.85}
                                             onPress={() => handleAnswer(opt)}
                                         >
-                                            <LinearGradient colors={bgColors} style={styles.optionGradient}>
+                                            <LinearGradient
+                                                colors={bgColors}
+                                                style={styles.optionGradient}
+                                                start={{ x: 0, y: 0 }}
+                                                end={{ x: 1, y: 1 }}
+                                            >
+                                                {/* Inner glow effect */}
+                                                <View style={styles.optionInnerGlow} />
+
                                                 <Text style={styles.optionText}>{opt}</Text>
+
+                                                {/* Shine effect */}
+                                                <View style={styles.optionShine} />
                                             </LinearGradient>
                                         </TouchableOpacity>
                                     );
                                 })}
-
                             </View>
                         ) : (
-                            <View style={[
-                                styles.inputContainer,
-                                isHardMode && {
-                                    backgroundColor: "#2C2C54",
-                                    borderColor: "#6A5AE0",
-                                    borderWidth: 1.5,
-                                    shadowColor: "#6A5AE0",
-                                    shadowOpacity: 0.4,
-                                    shadowRadius: 8,
-                                },
-                            ]}>
+                            <View style={[styles.inputContainer, isHardMode && styles.inputContainerHard]}>
                                 <TextInput
-                                    style={styles.inputField}
+                                    style={[styles.inputField, { color: isHardMode ? COLORS.textWhite : COLORS.textDark }]}
                                     value={inputAnswer}
                                     keyboardType="numeric"
+                                    placeholderTextColor={isHardMode ? COLORS.textGrey : "#9CA3AF"}
+                                    placeholder="Type ans..."
                                     onChangeText={setInputAnswer}
                                     onSubmitEditing={() => inputAnswer && handleAnswer(inputAnswer)}
                                 />
-                                <TouchableOpacity onPress={() => inputAnswer && handleAnswer(inputAnswer)}>
+                                <TouchableOpacity
+                                    onPress={() => inputAnswer && handleAnswer(inputAnswer)}
+                                    activeOpacity={0.85}
+                                    style={styles.submitBtnWrapper}
+                                >
                                     <LinearGradient
-                                        colors={isHardMode ? ["#6A5AE0", "#8E78FF"] : ["#FF9F43", "#FF6B6B"]}
+                                        colors={isHardMode ? [COLORS.neonPurple, "#A855F7"] : [COLORS.primaryStart, COLORS.primaryEnd]}
                                         style={styles.submitGradient}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 0 }}
                                     >
+                                        <View style={styles.submitInnerGlow} />
                                         <Text style={styles.submitText}>GO!</Text>
+                                        <View style={styles.submitShine} />
                                     </LinearGradient>
                                 </TouchableOpacity>
                             </View>
@@ -377,47 +476,70 @@ const AbacusGameScreen = ({ route, navigation }) => {
                 <Modal visible={gameOver} transparent animationType="fade">
                     <View style={styles.modalOverlay}>
                         <LinearGradient
-                            colors={score >= PASS_MARK ? ["#1DD1A1", "#10AC84"] : ["#FF6B6B", "#EE5253"]}
+                            colors={score >= PASS_MARK ? [COLORS.successStart, COLORS.successEnd] : [COLORS.errorStart, COLORS.errorEnd]}
                             style={styles.modalCard}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
                         >
-                            {/* Status Icon */}
                             <View style={styles.resultIconWrap}>
                                 <Text style={styles.resultIcon}>
                                     {score >= PASS_MARK ? "✓" : "✕"}
                                 </Text>
                             </View>
 
-                            {/* Title */}
                             <Text style={styles.resultTitle}>
                                 {score >= PASS_MARK ? "Level Completed!" : "Try Again"}
                             </Text>
 
-                            {/* Score */}
                             <Text style={styles.resultScore}>
                                 {score} / {TOTAL_QUESTIONS}
                             </Text>
 
-                            {/* Subtitle */}
                             <Text style={styles.resultSubText}>
                                 {score >= PASS_MARK
                                     ? "Great job! You unlocked the next level."
                                     : "Practice makes perfect. Give it another shot."}
                             </Text>
 
-                            {/* Buttons */}
                             <View style={styles.modalButtons}>
-                                <TouchableOpacity style={styles.modalBtnOutline} onPress={restartLevel}>
-                                    <Text style={styles.modalBtnOutlineText}>Replay</Text>
+                                <TouchableOpacity
+                                    style={styles.modalBtnOutline}
+                                    onPress={restartLevel}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={styles.modalBtnOutlineInner}>
+                                        <Ionicons name="refresh" size={24} color={COLORS.textWhite} style={{ marginRight: 8 }} />
+                                        <Text style={styles.modalBtnOutlineText}>Replay</Text>
+                                    </View>
                                 </TouchableOpacity>
 
                                 {score >= PASS_MARK && (
-                                    <TouchableOpacity style={styles.modalBtnPrimary} onPress={nextLevel}>
-                                        <Text style={styles.modalBtnPrimaryText}>Next Level</Text>
+                                    <TouchableOpacity
+                                        style={styles.modalBtnPrimaryWrapper}
+                                        onPress={nextLevel}
+                                        activeOpacity={0.85}
+                                    >
+                                        <LinearGradient
+                                            colors={['#FFFFFF', '#F9FAFB']}
+                                            style={styles.modalBtnPrimary}
+                                        >
+                                            <View style={styles.modalBtnPrimaryInner}>
+                                                <Text style={styles.modalBtnPrimaryText}>Next Level</Text>
+                                                <Ionicons name="arrow-forward" size={24} color={COLORS.successStart} style={{ marginLeft: 8 }} />
+                                            </View>
+                                        </LinearGradient>
                                     </TouchableOpacity>
                                 )}
 
-                                <TouchableOpacity style={styles.modalBtnGhost} onPress={() => navigation.goBack()}>
-                                    <Text style={styles.modalBtnGhostText}>Back to Menu</Text>
+                                <TouchableOpacity
+                                    style={styles.modalBtnGhost}
+                                    onPress={() => navigation.goBack()}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={styles.modalBtnGhostInner}>
+                                        <Ionicons name="home-outline" size={20} color="rgba(255,255,255,0.9)" style={{ marginRight: 6 }} />
+                                        <Text style={styles.modalBtnGhostText}>Back to Menu</Text>
+                                    </View>
                                 </TouchableOpacity>
                             </View>
                         </LinearGradient>
@@ -425,7 +547,7 @@ const AbacusGameScreen = ({ route, navigation }) => {
                 </Modal>
 
                 {showConfetti && (
-                    <ConfettiCannon count={120} fadeOut origin={{ x: width / 2, y: 0 }} />
+                    <ConfettiCannon count={150} fadeOut origin={{ x: width / 2, y: 0 }} />
                 )}
             </LinearGradient>
         </SafeAreaView>
@@ -435,275 +557,361 @@ const AbacusGameScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: "#F8F9FA",
-        marginTop: -30
+        backgroundColor: COLORS.hardBgStart,
+        marginTop: -30,
     },
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 8,
+        padding: 12,
     },
     backBtn: {
-        width: 44,
-        height: 44, borderRadius: 22,
-        backgroundColor: "#FFF",
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    backBtnGradient: {
+        flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        elevation: 4
-    },
-    backBtnText: {
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "#333"
+        borderWidth: 1.5,
+        borderColor: "rgba(255,255,255,0.3)",
+        borderRadius: 24,
     },
     levelBadge: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        elevation: 4,
+        paddingHorizontal: 24,
+        paddingVertical: 10,
+        borderRadius: 24,
+        elevation: 8,
+        shadowColor: COLORS.neonPurple,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
     },
     levelBadgeText: {
-        color: "#FFF",
+        color: COLORS.textWhite,
         fontWeight: "900",
-        fontSize: 16
-    },
-    progressBarFill: {
-        height: "100%",
+        fontSize: 18,
+        letterSpacing: 1,
+        textShadowColor: "rgba(0,0,0,0.3)",
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
     },
     scoreBox: {
-        backgroundColor: "#FFF",
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 12,
-        elevation: 4
+        borderRadius: 16,
+        elevation: 8,
+        overflow: 'hidden',
+        shadowColor: COLORS.neonCyan,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+    },
+    scoreBoxGradient: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderWidth: 2,
+        borderColor: COLORS.neonCyan,
+        borderRadius: 16,
     },
     scoreText: {
-        fontWeight: "bold",
-        fontSize: 16,
-        color: "#6A5AE0"
+        fontWeight: "900",
+        fontSize: 18,
+        color: COLORS.secondaryStart,
     },
     progressBarBg: {
-        height: 8,
-        backgroundColor: "#DEE2E6",
+        height: 10,
+        backgroundColor: "rgba(255,255,255,0.2)",
         marginHorizontal: 20,
-        borderRadius: 4,
-        overflow: "hidden"
+        borderRadius: 5,
+        overflow: "hidden",
+        marginTop: 8,
     },
     progressBarFill: {
         height: "100%",
-        backgroundColor: "#1DD1A1"
+        borderRadius: 5,
     },
     gameView: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        paddingHorizontal: 20
+        paddingHorizontal: 10,
     },
     questionCard: {
         width: "100%",
-        backgroundColor: "#FFF",
+        backgroundColor: "rgba(255,255,255,0.95)",
         borderRadius: 32,
         padding: 40,
         alignItems: "center",
-        elevation: 6,
+        elevation: 12,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.1,
-        shadowRadius: 15
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+        borderWidth: 2,
+        borderColor: "rgba(255,255,255,0.5)",
+    },
+    questionCardHard: {
+        backgroundColor: "rgba(27,27,47,0.95)",
+        borderColor: COLORS.neonPurple,
+        borderWidth: 3,
+        shadowColor: COLORS.neonPurple,
+        shadowOpacity: 0.5,
     },
     questionText: {
-        fontSize: 48,
+        fontSize: 52,
         fontWeight: "900",
     },
     equalSign: {
-        fontSize: 32,
-        fontWeight: "700",
-        marginTop: 10,
+        fontSize: 36,
+        fontWeight: "800",
+        marginTop: 12,
     },
-
     answerArea: {
         marginTop: 40,
-        width: "100%"
+        width: "100%",
     },
     mcqGrid: {
         flexDirection: "row",
         flexWrap: "wrap",
-        justifyContent: "space-between"
+        justifyContent: "space-between",
     },
     optionBtn: {
         width: "48%",
-        height: 80,
-        marginBottom: 15,
-        borderRadius: 20,
-        elevation: 4
+        height: 90,
+        marginBottom: 16,
+        borderRadius: 28,
+        elevation: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
     },
     optionGradient: {
         flex: 1,
-        borderRadius: 20,
+        borderRadius: 28,
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        borderWidth: 3,
+        borderColor: "rgba(255,255,255,0.4)",
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    optionInnerGlow: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '30%',
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+    },
+    optionShine: {
+        position: 'absolute',
+        top: 5,
+        left: 5,
+        right: 5,
+        height: '25%',
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: 20,
     },
     optionText: {
-        color: "#FFF",
-        fontSize: 28,
-        fontWeight: "800"
+        color: COLORS.textWhite,
+        fontSize: 36,
+        fontWeight: "900",
+        textShadowColor: "rgba(0,0,0,0.3)",
+        textShadowOffset: { width: 0, height: 3 },
+        textShadowRadius: 6,
+        zIndex: 1,
     },
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#FFF",
-        borderRadius: 25,
-        paddingLeft: 20,
-        elevation: 4
+        backgroundColor: "rgba(255,255,255,0.95)",
+        borderRadius: 28,
+        paddingLeft: 24,
+        elevation: 10,
+        borderWidth: 3,
+        borderColor: "rgba(255,255,255,0.5)",
+        overflow: 'hidden',
+    },
+    inputContainerHard: {
+        backgroundColor: "rgba(44,44,84,0.95)",
+        borderColor: COLORS.neonPurple,
+        borderWidth: 3,
     },
     inputField: {
         flex: 1,
-        height: 70,
-        fontSize: 32,
+        height: 80,
+        fontSize: 36,
         fontWeight: "bold",
-        color: "#333"
     },
-    submitBtn: {
-        width: 100,
-        height: 70,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 25
+    submitBtnWrapper: {
+        borderRadius: 28,
     },
     submitGradient: {
-        flex: 1,
-        borderTopRightRadius: 25,
-        borderBottomRightRadius: 25,
+        width: 120,
+        height: 80,
+        borderTopRightRadius: 28,
+        borderBottomRightRadius: 28,
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    submitInnerGlow: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '35%',
+        backgroundColor: 'rgba(255,255,255,0.25)',
+    },
+    submitShine: {
+        position: 'absolute',
+        top: 5,
+        left: 5,
+        right: 5,
+        height: '30%',
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 15,
     },
     submitText: {
-        color: "#FFF",
+        color: COLORS.textWhite,
         fontWeight: "900",
-        fontSize: 24
+        fontSize: 28,
+        letterSpacing: 2,
+        textShadowColor: "rgba(0,0,0,0.3)",
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
+        zIndex: 1,
     },
-    feedbackOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 100,
-        backgroundColor: "rgba(255,255,255,0.7)"
-    },
-    feedbackCircle: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        justifyContent: "center",
-        alignItems: "center",
-        elevation: 10
-    },
-    feedbackIcon: {
-        fontSize: 60,
-        color: "#FFF",
-        fontWeight: "900"
-    },
-
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.65)",
+        backgroundColor: "rgba(0,0,0,0.75)",
         justifyContent: "center",
         alignItems: "center",
     },
-
     modalCard: {
-        width: width * 0.85,
-        paddingVertical: 36,
-        paddingHorizontal: 28,
-        borderRadius: 32,
+        width: width * 0.88,
+        paddingVertical: 40,
+        paddingHorizontal: 32,
+        borderRadius: 36,
         alignItems: "center",
-        elevation: 12,
+        elevation: 20,
+        borderWidth: 3,
+        borderColor: "rgba(255,255,255,0.3)",
     },
-
     resultIconWrap: {
-        width: 88,
-        height: 88,
-        borderRadius: 44,
-        backgroundColor: "rgba(255,255,255,0.2)",
+        width: 96,
+        height: 96,
+        borderRadius: 48,
+        backgroundColor: "rgba(255,255,255,0.25)",
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 20,
+        marginBottom: 24,
+        borderWidth: 3,
+        borderColor: "rgba(255,255,255,0.4)",
     },
-
     resultIcon: {
-        fontSize: 48,
+        fontSize: 52,
         fontWeight: "900",
-        color: "#FFF",
+        color: COLORS.textWhite,
     },
-
     resultTitle: {
-        fontSize: 30,
+        fontSize: 32,
         fontWeight: "900",
-        color: "#FFF",
-        marginBottom: 6,
+        color: COLORS.textWhite,
+        marginBottom: 8,
         textAlign: "center",
     },
-
     resultScore: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: "800",
-        color: "#FFF",
-        marginBottom: 6,
+        color: COLORS.textWhite,
+        marginBottom: 8,
     },
-
     resultSubText: {
-        fontSize: 16,
-        color: "rgba(255,255,255,0.9)",
+        fontSize: 17,
+        color: "rgba(255,255,255,0.95)",
         textAlign: "center",
-        marginBottom: 28,
+        marginBottom: 32,
+        lineHeight: 24,
     },
-
     modalButtons: {
         width: "100%",
     },
-
+    modalBtnPrimaryWrapper: {
+        borderRadius: 32,
+        marginBottom: 14,
+        elevation: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+    },
     modalBtnPrimary: {
-        backgroundColor: "#FFFFFF",
-        height: 56,
-        borderRadius: 28,
+        height: 64,
+        borderRadius: 32,
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 12,
+        borderWidth: 3,
+        borderColor: "rgba(16, 185, 129, 0.3)",
     },
-
+    modalBtnPrimaryInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     modalBtnPrimaryText: {
-        color: "#10AC84",
-        fontSize: 18,
+        color: COLORS.successStart,
+        fontSize: 22,
         fontWeight: "900",
     },
-
     modalBtnOutline: {
-        borderWidth: 2,
-        borderColor: "rgba(255,255,255,0.7)",
-        height: 56,
-        borderRadius: 28,
+        borderWidth: 3,
+        borderColor: "rgba(255,255,255,0.8)",
+        height: 64,
+        borderRadius: 32,
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 12,
+        marginBottom: 14,
+        backgroundColor: "rgba(255,255,255,0.1)",
     },
-
+    modalBtnOutlineInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     modalBtnOutlineText: {
-        color: "#FFF",
-        fontSize: 18,
+        color: COLORS.textWhite,
+        fontSize: 22,
+        fontWeight: "800",
+    },
+    modalBtnGhost: {
+        height: 54,
+        justifyContent: "center",
+        alignItems: "center",
+        // backgroundColor: "rgba(255,255,255,0.05)",
+        borderRadius: 27,
+    },
+    modalBtnGhostInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalBtnGhostText: {
+        color: "rgba(255,255,255,0.9)",
+        fontSize: 17,
         fontWeight: "700",
     },
-
-    modalBtnGhost: {
-        height: 48,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    modalBtnGhostText: {
-        color: "rgba(255,255,255,0.85)",
-        fontSize: 16,
-        fontWeight: "600",
-    },
-
 });
 
 export default AbacusGameScreen;
