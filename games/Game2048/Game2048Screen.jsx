@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Dimensions, PanResponder, Pressable, Animated }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
-import Card from '../../shared/Card';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_SIZE = 4;
@@ -117,7 +116,7 @@ const Game2048Screen = ({ navigation }) => {
                 useNativeDriver: true,
             }).start();
         }
-    }, [gameOver]);
+    }, [gameOver, overlayOpacity]);
 
 
     const move = (direction) => {

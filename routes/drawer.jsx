@@ -5,7 +5,6 @@ import {
 } from '@react-navigation/drawer';
 import AboutPage from '../screens/AboutPage';
 import SettingsPage from '../screens/SettingsPage';
-import AppNavigator from './homeStack';
 import GameStack from './gameStack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Text, View, StyleSheet } from 'react-native';
@@ -17,7 +16,7 @@ const Drawer = createDrawerNavigator();
 function CustomDrawerContent(props) {
     return (
         <View style={styles.drawerContent}>
-            <Text style={styles.drawerHeader}>Review Game Group</Text>
+            <Text style={styles.drawerHeader}>Games Hub</Text>
             <DrawerContentScrollView {...props}>
                 <DrawerItemList {...props} />
             </DrawerContentScrollView>
@@ -57,21 +56,12 @@ function RootDrawerNavigation() {
                     }}
                 />
                 <Drawer.Screen
-                    name="Root Home"
-                    component={AppNavigator}
-                    options={{
-                        drawerIcon: ({ focused }) =>
-                            <DrawerIcon name={focused ? 'home' : 'maps-home-work'} focused={focused} />,
-                        headerTitle: () => <LogoImage title_two={'Home'} title_one={'Root'} />,
-                    }}
-                />
-                <Drawer.Screen
                     name="About"
                     component={AboutPage}
                     options={{
                         drawerIcon: ({ focused }) =>
                             <DrawerIcon name={focused ? 'query-builder' : 'info-outline'} focused={focused} />,
-                        headerTitle: () => <LogoImage title_one={'About'} title_two={'Review'} />,
+                        headerTitle: () => <LogoImage title_one={'About'} title_two={'Games'} />,
                     }}
                 />
                 <Drawer.Screen
@@ -80,7 +70,7 @@ function RootDrawerNavigation() {
                     options={{
                         drawerIcon: ({ focused }) =>
                             <DrawerIcon name={focused ? 'settings-suggest' : 'settings-applications'} focused={focused} />,
-                        headerTitle: () => <LogoImage title_two={'Settings'} title_one={'Review'} />,
+                        headerTitle: () => <LogoImage title_two={'Settings'} title_one={'Games'} />,
                     }}
                 />
             </Drawer.Navigator>

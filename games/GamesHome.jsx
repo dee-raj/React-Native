@@ -76,6 +76,13 @@ const GAMES = [
         family: 'FontAwesome6',
         category: 'Learning',
     },
+    {
+        name: 'Sudoku',
+        route: 'SudokuLevelSelection',
+        icon: 'table-cells',
+        family: 'FontAwesome6',
+        category: 'Puzzles',
+    },
 ];
 
 const GamesHome = ({ navigation }) => {

@@ -2,7 +2,7 @@
   "expo": {
     "name": "GameGroup",
     "slug": "game-group",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,14 +12,16 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.deeraj.GameGroup"
+      "package": "com.deeraj.GameGroup",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"

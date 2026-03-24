@@ -91,7 +91,14 @@ const BackgroundBeads = ({ isHardMode }) => {
     );
 };
 
-const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+const shuffle = (arr) => {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+};
 
 /* Subtraction: preserve decimal invariant (.0 / .5) */
 const generateSubtractionOptions = (ans) => {
@@ -136,7 +143,14 @@ const generateDivisionOptions = (num1, num2, ans) => {
 
 /* ---------- Screen ---------- */
 const AbacusGameScreen = ({ route, navigation }) => {
-    const { level, category } = route.params;
+    const { level = 1, category } = route.params || {};
+    if (!category) {
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <Text>Missing category. Please go back and select a category.</Text>
+            </SafeAreaView>
+        );
+    }
     const { id: categoryId } = category;
     const isHardMode = categoryId === "hard";
 

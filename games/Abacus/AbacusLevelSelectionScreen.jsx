@@ -16,7 +16,14 @@ const { width } = Dimensions.get("window");
 const TOTAL_LEVELS = 21;
 
 const AbacusLevelSelectionScreen = ({ route, navigation }) => {
-    const { category } = route.params; // ✅ full object
+    const { category } = route.params || {};
+    if (!category) {
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <Text style={{ color: '#fff' }}>Missing category data.</Text>
+            </SafeAreaView>
+        );
+    }
     const { id: categoryId, name: categoryName, colors } = category;
 
     const STORAGE_KEY = `@abacus_math_${categoryId}_progress`;

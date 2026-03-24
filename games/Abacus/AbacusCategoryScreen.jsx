@@ -10,7 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ABACUS_CATEGORIES } from './AbacusConfig';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons/build/Icons';
+import { Ionicons } from '@expo/vector-icons';
 
 const AbacusCategoryScreen = ({ navigation }) => {
     const renderCategory = ({ item }) => (

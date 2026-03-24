@@ -1,6 +1,6 @@
-import { StyleSheet, View } from 'react-native';
 import React from 'react';
-import PropTypes from 'prop-types'; // Add this if you're using PropTypes
+import { StyleSheet, View } from 'react-native';
+import PropTypes from 'prop-types';
 
 const Card = ({ children, backgroundColor = '#FAB647' }) => {
     return (

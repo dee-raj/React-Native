@@ -9,7 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-const SYMBOLS = ['🍎', '🍌', '🍇', '🍓', '🍒', '🍍', '🥝', '🍉', '🍑', '🍋', '🍐', '🥭', '🍅', '🥥', '🍊', '🍍', '🍈', '🥦', '🌽', '🍕', '🍔', '🍟', '🍦', '🍩', '🍬', '🍭', '🍪', '🍫', '🎁', '🎂', '🎈', '🎉'];
+const SYMBOLS = ['🍎', '🍌', '🍇', '🍓', '🍒', '🍍', '🥝', '🍉', '🍑', '🍋', '🍐', '🥭', '🍅', '🥥', '🍊', '🍈', '🥦', '🌽', '🍕', '🍔', '🍟', '🍦', '🍩', '🍬', '🍭', '🍪', '🍫', '🎁', '🎂', '🎈', '🎉', '🌟'];
 
 const ONET_LEVELS_KEY = '@onet_master_levels';
 
@@ -277,8 +277,9 @@ const OnetMasterScreen = ({ navigation, route }) => {
         return false;
     }, [canConnect]);
 
-    const shuffleGrid = useCallback(() => {
-        const flatTiles = grid.flat().filter(t => t !== null);
+    const shuffleGrid = useCallback((gridToShuffle) => {
+        const sourceGrid = gridToShuffle || grid;
+        const flatTiles = sourceGrid.flat().filter(t => t !== null);
         flatTiles.sort(() => Math.random() - 0.5);
 
         const newGrid = [];
@@ -286,7 +287,7 @@ const OnetMasterScreen = ({ navigation, route }) => {
         for (let r = 0; r < gridConfig.rows; r++) {
             newGrid[r] = [];
             for (let c = 0; c < gridConfig.cols; c++) {
-                if (grid[r][c] !== null) {
+                if (sourceGrid[r][c] !== null) {
                     newGrid[r][c] = flatTiles[index++];
                 } else {
                     newGrid[r][c] = null;
@@ -297,7 +298,7 @@ const OnetMasterScreen = ({ navigation, route }) => {
         setSelected(null);
 
         if (flatTiles.length > 0 && !findAvailableMoves(newGrid, gridConfig.rows, gridConfig.cols)) {
-            setTimeout(shuffleGrid, 100);
+            setTimeout(() => shuffleGrid(newGrid), 100);
         }
     }, [grid, gridConfig, findAvailableMoves]);
 
@@ -329,7 +330,7 @@ const OnetMasterScreen = ({ navigation, route }) => {
                 } else {
                     if (!findAvailableMoves(newGrid, gridConfig.rows, gridConfig.cols)) {
                         Alert.alert("No more moves!", "Shuffling tiles...");
-                        setTimeout(shuffleGrid, 1000);
+                        setTimeout(() => shuffleGrid(newGrid), 1000);
                     }
                 }
             } else {

@@ -64,7 +64,7 @@ const TicTacToeScreen = () => {
 
     useEffect(() => {
         if (winner && !showConfetti) setShowConfetti(true);
-    }, [winner]);
+    }, [winner, showConfetti]);
 
     const SQUARE_SIZE = BOARD_SIZE / 3;
 

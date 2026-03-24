@@ -16,6 +16,8 @@ import AbacusLevelSelectionScreen from '../games/Abacus/AbacusLevelSelectionScre
 import AbacusGameScreen from '../games/Abacus/AbacusGameScreen';
 import SpeakAndLearnScreen from '../games/SpeakAndLearn/SpeakAndLearnScreen';
 import ShapeTapGameScreen from '../games/ShapeTapGame/ShapeTapGameScreen';
+import SudokuScreen from '../games/Sudoku/SudokuScreen';
+import SudokuLevelSelectionScreen from '../games/Sudoku/SudokuLevelSelectionScreen';
 
 
 const Stack = createStackNavigator();
@@ -116,6 +118,16 @@ const GameStack = () => {
                 name="ShapeTap"
                 component={ShapeTapGameScreen}
                 options={{ title: 'Shape Tap', headerShown: false }}
+            />
+            <Stack.Screen
+                name="SudokuLevelSelection"
+                component={SudokuLevelSelectionScreen}
+                options={{ title: 'Sudoku Levels', headerShown: false }}
+            />
+            <Stack.Screen
+                name="Sudoku"
+                component={SudokuScreen}
+                options={{ title: 'Sudoku', headerShown: false }}
             />
 
         </Stack.Navigator>

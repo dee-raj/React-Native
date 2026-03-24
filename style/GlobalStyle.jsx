@@ -48,14 +48,3 @@ export const globalstyles = StyleSheet.create({
         borderRadius: 3,
     },
 });
-
-export const MyImages = {
-    ratings: {
-        '1': require('../assets/rate1.png'),
-        '2': require('../assets/rate2.png'),
-        '3': require('../assets/rate3.png'),
-        '4': require('../assets/rate4.png'),
-        '5': require('../assets/rate5.png'),
-    },
-    heart: require('../assets/heart.png'),
-};

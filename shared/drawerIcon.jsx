@@ -1,9 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Image, Pressable, Text, View, StyleSheet } from 'react-native';
-import { MyImages } from '../style/GlobalStyle';
+import { Image, Text, View, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
-import { ModelContext } from '../shared/ReviewsData';
 
 const DrawerIcon = ({ name, focused }) => (
     <MaterialIcons name={name} color={focused ? '#8970FF' : '#784575'} size={24} />
@@ -17,10 +15,7 @@ DrawerIcon.propTypes = {
 export const LogoImage = ({ title_one, title_two }) => (
     <View style={styles.headerStyle}>
         <Text style={styles.titleText}>{title_one}</Text>
-        <Image
-            source={MyImages.heart}
-            style={styles.imgStyle}
-        />
+        <View style={styles.divider} />
         <Text style={styles.titleText}>{title_two}</Text>
     </View>
 );
@@ -28,42 +23,6 @@ export const LogoImage = ({ title_one, title_two }) => (
 LogoImage.propTypes = {
     title_one: PropTypes.string.isRequired,
     title_two: PropTypes.string.isRequired,
-};
-
-export const ToggleBtn = ({ name, text }) => {
-    const { modelOpen, setModelOpen } = useContext(ModelContext);
-    return (
-        <Pressable
-            style={styles.openBtn}
-            onPress={() => setModelOpen(!modelOpen)}
-            accessibilityLabel="Toggle review model"
-        >
-            <Text style={styles.textStyle}>{text}</Text>
-            <MaterialIcons name={name} size={24} color="#898565" />
-        </Pressable>
-    );
-};
-
-export const FabToggleBtn = () => {
-    const { modelOpen, setModelOpen } = useContext(ModelContext);
-
-    return (
-        <Pressable
-            onPress={() => setModelOpen(!modelOpen)}
-            style={({ pressed }) => [
-                styles.fab,
-                pressed && styles.fabPressed,
-            ]}
-            accessibilityLabel="Add new review"
-        >
-            <MaterialIcons name="add" size={28} color="#FFF" />
-        </Pressable>
-    );
-};
-
-ToggleBtn.propTypes = {
-    name: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -80,55 +39,11 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '800',
     },
-    imgStyle: {
-        opacity: 0.4,
-        borderRadius: 20,
-        width: 30,
-        height: 30,
-    },
-    openBtn: {
-        backgroundColor: '#ACFEDB',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        paddingVertical: 10,
-        borderRadius: 10,
-        shadowOffset: { width: 2, height: 3 },
-        shadowColor: '#789134',
-        shadowOpacity: 0.7,
-        shadowRadius: 10,
-        marginVertical: 5,
-        elevation: 5,
-        width: '100%',
-    },
-    textStyle: {
-        fontWeight: '700',
-        fontStyle: 'italic',
-        fontSize: 24,
-        color: '#967474',
-    },
-    fab: {
-        position: 'absolute',
-        bottom: 24,
-        right: 24,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: '#4F46E5',
-        justifyContent: 'center',
-        alignItems: 'center',
-
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 8,
-
-        zIndex: 50,
-    },
-
-    fabPressed: {
-        transform: [{ scale: 0.94 }],
+    divider: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#333',
     },
 });
 

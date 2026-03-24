@@ -56,6 +56,7 @@ const ShapeTapGameScreen = () => {
     };
 
     const selectNewTarget = useCallback(() => {
+        if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current);
         const next = SHAPES[Math.floor(Math.random() * SHAPES.length)];
         setTargetShape(next);
         setShapesOrder(shuffleArray(SHAPES));

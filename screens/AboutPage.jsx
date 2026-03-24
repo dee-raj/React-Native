@@ -21,7 +21,8 @@ const AboutPage = ({ navigation }) => {
                             'Flow Pipes',
                             'Abacus Math',
                             'Speak & Learn',
-                            'Shape Tap'
+                            'Shape Tap',
+                            'Sudoku',
                         ].map((game, index) => (
                             <Text key={index} style={styles.gameItem}>• {game}</Text>
                         ))}

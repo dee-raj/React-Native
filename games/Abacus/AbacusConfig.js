@@ -38,7 +38,7 @@ export const getLevelConfig = (category, level) => {
     const mode = level <= 8
         ? 'MCQ'
         : level <= 15
-            ? (Math.random() > 0.5 ? 'MIXED' : 'MCQ')
+            ? (level % 2 === 0 ? 'MIXED' : 'MCQ')
             : 'INPUT';
 
     // ✅ Determine operations

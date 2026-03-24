@@ -5,6 +5,8 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
 import Card from '../../shared/Card';
 
+const isMountedRef = { current: true };
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const LOG_KEY = '@flow_pipes_levels';
 const MAX_LEVEL = 21;
@@ -322,6 +324,11 @@ const FlowGameScreen = ({ navigation, route }) => {
         }
     };
 
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => { isMountedRef.current = false; };
+    }, []);
+
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
@@ -339,9 +346,11 @@ const FlowGameScreen = ({ navigation, route }) => {
                     gameWonRef.current = true;
                     setIsSaving(true);
                     await saveProgress(levelRef.current);
-                    setIsSaving(false);
-                    setGameWon(true);
-                    setShowConfetti(true);
+                    if (isMountedRef.current) {
+                        setIsSaving(false);
+                        setGameWon(true);
+                        setShowConfetti(true);
+                    }
                 }
             },
         })
