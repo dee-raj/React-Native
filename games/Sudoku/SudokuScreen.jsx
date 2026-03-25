@@ -4,12 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { getPuzzle, getDifficultyList } from './SudokuConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getPuzzle, getDifficultyList, STORAGE_KEY, getTotalLevels } from './SudokuConfig';
 
 const { width } = Dimensions.get('window');
 const GRID_PADDING = 20;
-const GRID_SIZE = width - GRID_PADDING * 2;
-const CELL_SIZE = GRID_SIZE / 9;
+const CELL_SIZE = (width - GRID_PADDING * 2) / 9;
+const COOLDOWN_SECONDS = 7;
 
 const SudokuScreen = ({ navigation, route }) => {
     const { difficulty = 'easy', level = 0 } = route.params || {};
@@ -26,11 +27,23 @@ const SudokuScreen = ({ navigation, route }) => {
     const [showConfetti, setShowConfetti] = useState(false);
     const [highlightNumber, setHighlightNumber] = useState(null);
 
+    // Mistake / Game Over state
+    const [mistakes, setMistakes] = useState(0);
+    const [gameOver, setGameOver] = useState(false);
+    const [secondChanceUsed, setSecondChanceUsed] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+    const [lastWrongCell, setLastWrongCell] = useState(null);
+
     const timerRef = useRef(null);
+    const cooldownRef = useRef(null);
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const gameOverAnim = useRef(new Animated.Value(0)).current;
 
-    const diffConfig = getDifficultyList().find(d => d.id === difficulty) || { label: 'Easy', color: '#10B981' };
+    const diffConfig = getDifficultyList().find(d => d.id === difficulty) || { label: 'Easy', color: '#10B981', lives: 5 };
+    const maxMistakes = diffConfig.lives || 5;
+    const isInputBlocked = gameOver || cooldown > 0 || gameWon;
 
+    // Initialize puzzle
     useEffect(() => {
         const puzzleData = getPuzzle(difficulty, level);
         if (puzzleData) {
@@ -45,16 +58,40 @@ const SudokuScreen = ({ navigation, route }) => {
             setGameWon(false);
             setShowConfetti(false);
             setHighlightNumber(null);
+            setMistakes(0);
+            setGameOver(false);
+            setSecondChanceUsed(false);
+            setCooldown(0);
+            setLastWrongCell(null);
         }
     }, [difficulty, level]);
 
+    // Timer — runs only when game is active
     useEffect(() => {
-        if (!gameWon && board.length > 0) {
+        if (!gameWon && !gameOver && cooldown === 0 && board.length > 0) {
             timerRef.current = setInterval(() => setTimer(t => t + 1), 1000);
         }
         return () => clearInterval(timerRef.current);
-    }, [gameWon, board.length]);
+    }, [gameWon, gameOver, cooldown, board.length]);
 
+    // Cooldown countdown
+    useEffect(() => {
+        if (cooldown > 0) {
+            cooldownRef.current = setTimeout(() => setCooldown(c => c - 1), 1000);
+        }
+        return () => clearTimeout(cooldownRef.current);
+    }, [cooldown]);
+
+    // Game Over animation
+    useEffect(() => {
+        if (gameOver) {
+            Animated.timing(gameOverAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+        } else {
+            gameOverAnim.setValue(0);
+        }
+    }, [gameOver]);
+
+    // Win animation
     useEffect(() => {
         if (gameWon) {
             Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
@@ -64,12 +101,10 @@ const SudokuScreen = ({ navigation, route }) => {
     const findConflicts = useCallback((brd, r, c, val) => {
         if (val === 0) return new Set();
         const newConflicts = new Set();
-
         for (let i = 0; i < 9; i++) {
             if (i !== c && brd[r][i] === val) newConflicts.add(`${r},${i}`);
             if (i !== r && brd[i][c] === val) newConflicts.add(`${i},${c}`);
         }
-
         const boxR = Math.floor(r / 3) * 3;
         const boxC = Math.floor(c / 3) * 3;
         for (let dr = 0; dr < 3; dr++) {
@@ -81,21 +116,59 @@ const SudokuScreen = ({ navigation, route }) => {
                 }
             }
         }
-
         return newConflicts;
     }, []);
 
-    const checkWin = useCallback((brd) => {
+    const revalidateBoard = useCallback((brd) => {
+        const newErrors = new Set();
+        const allConflicts = new Set();
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (brd[row][col] !== 0 && solution[row] && brd[row][col] !== solution[row][col]) {
+                    newErrors.add(`${row},${col}`);
+                }
+                if (brd[row][col] !== 0) {
+                    const cellConflicts = findConflicts(brd, row, col, brd[row][col]);
+                    cellConflicts.forEach(c => allConflicts.add(c));
+                    if (cellConflicts.size > 0) allConflicts.add(`${row},${col}`);
+                }
+            }
+        }
+        setErrors(newErrors);
+        setConflicts(allConflicts);
+    }, [solution, findConflicts]);
+
+    const checkWin = (brd) => {
         for (let r = 0; r < 9; r++) {
             for (let c = 0; c < 9; c++) {
                 if (brd[r][c] === 0) return false;
             }
         }
         return true;
-    }, []);
+    };
+
+    const saveProgress = async () => {
+        try {
+            const saved = await AsyncStorage.getItem(STORAGE_KEY);
+            let data = { completedLevels: { easy: [], medium: [], hard: [] } };
+            if (saved) {
+                data = JSON.parse(saved);
+                if (!data.completedLevels) data = { completedLevels: { easy: [], medium: [], hard: [] } };
+            }
+
+            const completed = data.completedLevels[difficulty] || [];
+            if (!completed.includes(level)) {
+                completed.push(level);
+                data.completedLevels[difficulty] = completed;
+                await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+        } catch (e) {
+            console.error('Failed to save sudoku progress', e);
+        }
+    };
 
     const handleCellPress = (r, c) => {
-        if (gameWon) return;
+        if (isInputBlocked) return;
         if (initialBoard[r]?.[c] !== 0) {
             setSelectedCell({ r, c });
             setHighlightNumber(initialBoard[r][c]);
@@ -106,38 +179,74 @@ const SudokuScreen = ({ navigation, route }) => {
     };
 
     const handleNumberInput = (num) => {
-        if (!selectedCell || gameWon) return;
+        if (!selectedCell || isInputBlocked) return;
         const { r, c } = selectedCell;
         if (initialBoard[r][c] !== 0) return;
 
+        const prevVal = board[r][c];
         const newBoard = board.map(row => [...row]);
         newBoard[r][c] = num;
         setBoard(newBoard);
         setMoves(m => m + 1);
         setHighlightNumber(num || null);
 
-        const newErrors = new Set();
-        const allConflicts = new Set();
+        revalidateBoard(newBoard);
 
-        for (let row = 0; row < 9; row++) {
-            for (let col = 0; col < 9; col++) {
-                if (newBoard[row][col] !== 0 && solution[row] && newBoard[row][col] !== solution[row][col]) {
-                    newErrors.add(`${row},${col}`);
-                }
-                if (newBoard[row][col] !== 0) {
-                    const cellConflicts = findConflicts(newBoard, row, col, newBoard[row][col]);
-                    cellConflicts.forEach(c => allConflicts.add(c));
-                    if (cellConflicts.size > 0) allConflicts.add(`${row},${col}`);
-                }
+        // Check if this was a wrong move
+        if (num !== 0 && solution[r] && num !== solution[r][c]) {
+            const newMistakes = mistakes + 1;
+            setMistakes(newMistakes);
+            setLastWrongCell({ r, c, prevVal });
+
+            if (newMistakes >= maxMistakes) {
+                setGameOver(true);
+                clearInterval(timerRef.current);
+                return;
             }
         }
-        setErrors(newErrors);
-        setConflicts(allConflicts);
 
-        if (checkWin(newBoard) && newErrors.size === 0 && allConflicts.size === 0) {
+        // Check win
+        if (checkWin(newBoard) && errors.size === 0) {
             setGameWon(true);
             setShowConfetti(true);
             clearInterval(timerRef.current);
+            saveProgress();
+        }
+    };
+
+    // Second Chance: revert last wrong cell, set mistakes to max-1, start cooldown
+    const handleSecondChance = () => {
+        if (lastWrongCell) {
+            const newBoard = board.map(row => [...row]);
+            newBoard[lastWrongCell.r][lastWrongCell.c] = 0;
+            setBoard(newBoard);
+            revalidateBoard(newBoard);
+        }
+        setMistakes(maxMistakes - 1);
+        setSecondChanceUsed(true);
+        setGameOver(false);
+        setLastWrongCell(null);
+        setCooldown(COOLDOWN_SECONDS);
+    };
+
+    // Restart: full reset
+    const handleRestart = () => {
+        const puzzleData = getPuzzle(difficulty, level);
+        if (puzzleData) {
+            setBoard(puzzleData.puzzle.map(row => [...row]));
+            setErrors(new Set());
+            setConflicts(new Set());
+            setSelectedCell(null);
+            setHighlightNumber(null);
+            setMoves(0);
+            setTimer(0);
+            setMistakes(0);
+            setGameOver(false);
+            setGameWon(false);
+            setShowConfetti(false);
+            setSecondChanceUsed(false);
+            setCooldown(0);
+            setLastWrongCell(null);
         }
     };
 
@@ -169,7 +278,6 @@ const SudokuScreen = ({ navigation, route }) => {
     }
 
     const filledCount = board.flat().filter(v => v !== 0).length;
-    const totalCells = 81;
     const initialCount = initialBoard.flat().filter(v => v !== 0).length;
 
     return (
@@ -177,7 +285,7 @@ const SudokuScreen = ({ navigation, route }) => {
             <LinearGradient colors={['#1a1a2e', '#16213e', '#0f3460']} style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+                    <Pressable onPress={() => navigation.goBack()} style={styles.headerBtn}>
                         <Ionicons name="arrow-back" size={22} color="#FFF" />
                     </Pressable>
 
@@ -185,17 +293,7 @@ const SudokuScreen = ({ navigation, route }) => {
                         <Text style={styles.diffBadgeText}>{diffConfig.label} {level + 1}</Text>
                     </View>
 
-                    <Pressable onPress={() => {
-                        setBoard(initialBoard.map(row => [...row]));
-                        setSelectedCell(null);
-                        setErrors(new Set());
-                        setConflicts(new Set());
-                        setMoves(0);
-                        setTimer(0);
-                        setGameWon(false);
-                        setShowConfetti(false);
-                        setHighlightNumber(null);
-                    }} style={styles.backBtn}>
+                    <Pressable onPress={handleRestart} style={styles.headerBtn}>
                         <Ionicons name="refresh" size={22} color="#FFF" />
                     </Pressable>
                 </View>
@@ -203,16 +301,26 @@ const SudokuScreen = ({ navigation, route }) => {
                 {/* Stats Bar */}
                 <View style={styles.statsBar}>
                     <View style={styles.statItem}>
-                        <Ionicons name="time-outline" size={18} color="rgba(255,255,255,0.7)" />
+                        <Ionicons name="time-outline" size={16} color="rgba(255,255,255,0.7)" />
                         <Text style={styles.statText}>{formatTime(timer)}</Text>
                     </View>
+
+                    {/* Hearts */}
                     <View style={styles.statItem}>
-                        <Ionicons name="finger-print-outline" size={18} color="rgba(255,255,255,0.7)" />
-                        <Text style={styles.statText}>{moves} moves</Text>
+                        {Array.from({ length: maxMistakes }, (_, i) => (
+                            <Ionicons
+                                key={i}
+                                name={i < maxMistakes - mistakes ? 'heart' : 'heart-outline'}
+                                size={18}
+                                color={i < maxMistakes - mistakes ? '#EF4444' : 'rgba(255,255,255,0.3)'}
+                                style={{ marginHorizontal: 1 }}
+                            />
+                        ))}
                     </View>
+
                     <View style={styles.statItem}>
-                        <Ionicons name="checkmark-circle-outline" size={18} color="rgba(255,255,255,0.7)" />
-                        <Text style={styles.statText}>{filledCount - initialCount}/{totalCells - initialCount}</Text>
+                        <Ionicons name="checkmark-circle-outline" size={16} color="rgba(255,255,255,0.7)" />
+                        <Text style={styles.statText}>{filledCount - initialCount}/{81 - initialCount}</Text>
                     </View>
                 </View>
 
@@ -252,7 +360,7 @@ const SudokuScreen = ({ navigation, route }) => {
                                             <Text style={[
                                                 styles.cellText,
                                                 isInitial && styles.initialText,
-                                                hasError && styles.errorText,
+                                                hasError && styles.cellErrorText,
                                                 hasConflict && styles.conflictText,
                                             ]}>
                                                 {val !== 0 ? val : ''}
@@ -263,6 +371,17 @@ const SudokuScreen = ({ navigation, route }) => {
                             </View>
                         ))}
                     </View>
+
+                    {/* Cooldown Overlay */}
+                    {cooldown > 0 && (
+                        <View style={styles.cooldownOverlay}>
+                            <View style={styles.cooldownCard}>
+                                <Text style={styles.cooldownEmoji}>⏳</Text>
+                                <Text style={styles.cooldownValue}>{cooldown}</Text>
+                                <Text style={styles.cooldownLabel}>Resuming...</Text>
+                            </View>
+                        </View>
+                    )}
                 </View>
 
                 {/* Number Pad */}
@@ -274,8 +393,10 @@ const SudokuScreen = ({ navigation, route }) => {
                                 style={[
                                     styles.padButton,
                                     highlightNumber === num && styles.padButtonActive,
+                                    isInputBlocked && styles.padButtonDisabled,
                                 ]}
                                 onPress={() => handleNumberInput(num)}
+                                disabled={isInputBlocked}
                             >
                                 <Text style={[
                                     styles.padText,
@@ -291,8 +412,10 @@ const SudokuScreen = ({ navigation, route }) => {
                                 style={[
                                     styles.padButton,
                                     highlightNumber === num && styles.padButtonActive,
+                                    isInputBlocked && styles.padButtonDisabled,
                                 ]}
                                 onPress={() => handleNumberInput(num)}
+                                disabled={isInputBlocked}
                             >
                                 <Text style={[
                                     styles.padText,
@@ -301,36 +424,84 @@ const SudokuScreen = ({ navigation, route }) => {
                             </Pressable>
                         ))}
                         <Pressable
-                            style={[styles.padButton, styles.eraseButton]}
+                            style={[
+                                styles.padButton,
+                                styles.eraseButton,
+                                isInputBlocked && styles.padButtonDisabled,
+                            ]}
                             onPress={() => handleNumberInput(0)}
+                            disabled={isInputBlocked}
                         >
                             <Ionicons name="backspace-outline" size={24} color="#FFF" />
                         </Pressable>
                     </View>
                 </View>
 
-                {/* Win Modal */}
-                <Modal visible={gameWon} transparent animationType="fade">
-                    <Animated.View style={[styles.winOverlay, { opacity: fadeAnim }]}>
-                        <View style={styles.winCard}>
-                            <Text style={styles.winEmoji}>🎉</Text>
-                            <Text style={styles.winTitle}>Solved!</Text>
-                            <Text style={styles.winSubtitle}>{diffConfig.label} Level {level + 1}</Text>
+                {/* Game Over Modal */}
+                <Modal visible={gameOver} transparent animationType="fade">
+                    <Animated.View style={[styles.modalOverlay, { opacity: gameOverAnim }]}>
+                        <View style={styles.modalCard}>
+                            <Text style={styles.modalEmoji}>💔</Text>
+                            <Text style={styles.modalTitle}>Game Over</Text>
+                            <Text style={styles.modalSubtitle}>You ran out of lives!</Text>
 
-                            <View style={styles.winStats}>
-                                <View style={styles.winStatItem}>
-                                    <Text style={styles.winStatValue}>{formatTime(timer)}</Text>
-                                    <Text style={styles.winStatLabel}>Time</Text>
+                            <View style={styles.modalStats}>
+                                <View style={styles.modalStatItem}>
+                                    <Text style={styles.modalStatValue}>{formatTime(timer)}</Text>
+                                    <Text style={styles.modalStatLabel}>Time</Text>
                                 </View>
-                                <View style={styles.winStatDivider} />
-                                <View style={styles.winStatItem}>
-                                    <Text style={styles.winStatValue}>{moves}</Text>
-                                    <Text style={styles.winStatLabel}>Moves</Text>
+                                <View style={styles.modalStatDivider} />
+                                <View style={styles.modalStatItem}>
+                                    <Text style={styles.modalStatValue}>{moves}</Text>
+                                    <Text style={styles.modalStatLabel}>Moves</Text>
                                 </View>
                             </View>
 
-                            <Pressable style={styles.winButton} onPress={() => navigation.goBack()}>
-                                <Text style={styles.winButtonText}>Back to Levels</Text>
+                            {/* Second Chance */}
+                            {!secondChanceUsed && (
+                                <Pressable style={styles.btnSecondChance} onPress={handleSecondChance}>
+                                    <Ionicons name="play" size={22} color="#FFF" />
+                                    <Text style={styles.btnText}>Second Chance</Text>
+                                </Pressable>
+                            )}
+
+                            {/* Restart */}
+                            <Pressable style={styles.btnRestart} onPress={handleRestart}>
+                                <Ionicons name="reload" size={20} color="#FFF" />
+                                <Text style={styles.btnText}>Restart</Text>
+                            </Pressable>
+
+                            {/* New Game */}
+                            <Pressable style={styles.btnNewGame} onPress={() => navigation.goBack()}>
+                                <Ionicons name="game-controller" size={20} color="#FFF" />
+                                <Text style={styles.btnText}>New Game</Text>
+                            </Pressable>
+                        </View>
+                    </Animated.View>
+                </Modal>
+
+                {/* Win Modal */}
+                <Modal visible={gameWon} transparent animationType="fade">
+                    <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
+                        <View style={styles.modalCard}>
+                            <Text style={styles.modalEmoji}>🎉</Text>
+                            <Text style={[styles.modalTitle, { color: '#10B981' }]}>Solved!</Text>
+                            <Text style={styles.modalSubtitle}>{diffConfig.label} Level {level + 1}</Text>
+
+                            <View style={styles.modalStats}>
+                                <View style={styles.modalStatItem}>
+                                    <Text style={styles.modalStatValue}>{formatTime(timer)}</Text>
+                                    <Text style={styles.modalStatLabel}>Time</Text>
+                                </View>
+                                <View style={styles.modalStatDivider} />
+                                <View style={styles.modalStatItem}>
+                                    <Text style={styles.modalStatValue}>{moves}</Text>
+                                    <Text style={styles.modalStatLabel}>Moves</Text>
+                                </View>
+                            </View>
+
+                            <Pressable style={styles.btnNewGame} onPress={() => navigation.goBack()}>
+                                <Text style={styles.btnText}>Back to Levels</Text>
                             </Pressable>
                         </View>
                     </Animated.View>
@@ -360,7 +531,7 @@ const styles = StyleSheet.create({
         paddingTop: 12,
         marginBottom: 8,
     },
-    backBtn: {
+    headerBtn: {
         width: 44,
         height: 44,
         borderRadius: 22,
@@ -382,15 +553,16 @@ const styles = StyleSheet.create({
 
     statsBar: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingHorizontal: 20,
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 24,
         paddingVertical: 10,
         marginBottom: 12,
     },
     statItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 4,
     },
     statText: {
         color: 'rgba(255,255,255,0.85)',
@@ -442,11 +614,48 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
         fontWeight: '800',
     },
+    cellErrorText: {
+        color: '#E53935',
+        fontWeight: '800',
+    },
     conflictText: {
         color: '#E53935',
         fontWeight: '800',
     },
 
+    // Cooldown overlay
+    cooldownOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+    },
+    cooldownCard: {
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: 20,
+        paddingVertical: 20,
+        paddingHorizontal: 32,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    cooldownEmoji: {
+        fontSize: 32,
+        marginBottom: 4,
+    },
+    cooldownValue: {
+        fontSize: 48,
+        fontWeight: '900',
+        color: '#FFF',
+    },
+    cooldownLabel: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.7)',
+        marginTop: 4,
+    },
+
+    // Number pad
     pad: {
         marginTop: 24,
         paddingHorizontal: 24,
@@ -471,6 +680,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#4A90E2',
         borderColor: '#4A90E2',
     },
+    padButtonDisabled: {
+        opacity: 0.3,
+    },
     eraseButton: {
         backgroundColor: 'rgba(239,68,68,0.3)',
         borderColor: 'rgba(239,68,68,0.5)',
@@ -482,79 +694,109 @@ const styles = StyleSheet.create({
     },
     padTextActive: {
         color: '#FFFFFF',
-        fontSize: 22,
-        fontWeight: '800',
     },
 
-    winOverlay: {
+    // Shared modal styles
+    modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.75)',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    winCard: {
+    modalCard: {
         backgroundColor: '#FFF',
         borderRadius: 24,
-        padding: 32,
+        padding: 28,
         alignItems: 'center',
-        width: width * 0.85,
+        width: width * 0.88,
         elevation: 20,
     },
-    winEmoji: {
-        fontSize: 56,
-        marginBottom: 12,
+    modalEmoji: {
+        fontSize: 52,
+        marginBottom: 8,
     },
-    winTitle: {
-        fontSize: 32,
+    modalTitle: {
+        fontSize: 30,
         fontWeight: '900',
         color: '#1a1a2e',
         marginBottom: 4,
     },
-    winSubtitle: {
-        fontSize: 16,
+    modalSubtitle: {
+        fontSize: 15,
         color: '#666',
-        marginBottom: 24,
+        marginBottom: 20,
     },
-    winStats: {
+    modalStats: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#F3F4F6',
         borderRadius: 16,
-        padding: 20,
+        padding: 18,
         marginBottom: 24,
         width: '100%',
     },
-    winStatItem: {
+    modalStatItem: {
         flex: 1,
         alignItems: 'center',
     },
-    winStatValue: {
-        fontSize: 28,
+    modalStatValue: {
+        fontSize: 26,
         fontWeight: '900',
         color: '#1a1a2e',
     },
-    winStatLabel: {
+    modalStatLabel: {
         fontSize: 13,
         color: '#666',
         marginTop: 4,
     },
-    winStatDivider: {
+    modalStatDivider: {
         width: 1,
-        height: 40,
+        height: 36,
         backgroundColor: '#DDD',
     },
-    winButton: {
-        backgroundColor: '#4A90E2',
-        paddingHorizontal: 32,
-        paddingVertical: 14,
-        borderRadius: 24,
-        width: '100%',
+
+    // Buttons
+    btnSecondChance: {
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#F59E0B',
+        paddingVertical: 14,
+        borderRadius: 16,
+        width: '100%',
+        marginBottom: 10,
+        gap: 8,
     },
-    winButtonText: {
+    btnRestart: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#4A90E2',
+        paddingVertical: 14,
+        borderRadius: 16,
+        width: '100%',
+        marginBottom: 10,
+        gap: 8,
+    },
+    btnNewGame: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#6366F1',
+        paddingVertical: 14,
+        borderRadius: 16,
+        width: '100%',
+        gap: 8,
+    },
+    btnText: {
         color: '#FFF',
         fontWeight: '800',
-        fontSize: 18,
+        fontSize: 17,
+    },
+    btnHint: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 12,
+        marginLeft: 'auto',
     },
 });
 
