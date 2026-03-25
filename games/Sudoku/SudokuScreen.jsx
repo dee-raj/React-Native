@@ -516,7 +516,7 @@ const SudokuScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, marginTop: -32 },
+    safeArea: { flex: 1 },
     container: { flex: 1 },
     errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     errorText: { color: '#EF4444', fontSize: 16, fontWeight: '700', textAlign: 'center' },

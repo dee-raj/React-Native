@@ -1,31 +1,73 @@
 import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, Text, View, StyleSheet, ScrollView } from 'react-native';
+import { Pressable, Text, View, StyleSheet, ScrollView, Switch } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const SettingsPage = ({ navigation }) => {
+  const [sound, setSound] = React.useState(true);
+  const [darkMode, setDarkMode] = React.useState(true);
+
   return (
-    <LinearGradient colors={['#67F349', '#3BBF6B', '#2A9D8F']} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>⚙️ Settings</Text>
-        </View>
+    <LinearGradient
+      colors={['#0f2027', '#203a43', '#2c5364']}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.content}>
 
+        {/* Header */}
+        <Text style={styles.title}>Settings</Text>
+
+        {/* Card */}
         <View style={styles.card}>
-          <Text style={styles.description}>
-            Manage your app settings below. Customize your experience and make Game Hub truly yours!
-          </Text>
 
-          <Pressable
-            onPress={() => navigation.goBack()}
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}
-            accessibilityLabel="Go back to the home screen"
-          >
-            <Text style={styles.buttonText}>🏠 Go Back Home</Text>
+          {/* Section */}
+          <Text style={styles.sectionTitle}>Preferences</Text>
+
+          {/* Setting Item */}
+          <View style={styles.settingRow}>
+            <View>
+              <Text style={styles.settingTitle}>Sound Effects</Text>
+              <Text style={styles.settingSubtitle}>Enable game sounds</Text>
+            </View>
+            <Switch value={sound} onValueChange={setSound} />
+          </View>
+
+          <View style={styles.settingRow}>
+            <View>
+              <Text style={styles.settingTitle}>Dark Mode</Text>
+              <Text style={styles.settingSubtitle}>Better for night use</Text>
+            </View>
+            <Switch value={darkMode} onValueChange={setDarkMode} />
+          </View>
+
+          {/* Divider */}
+          <View style={styles.divider} />
+
+          {/* Action */}
+          <Pressable style={styles.settingRow}>
+            <Text style={styles.settingTitle}>Notifications</Text>
+            <Text style={styles.arrow}>{'>'}</Text>
           </Pressable>
+
+          <Pressable style={styles.settingRow}>
+            <Text style={styles.settingTitle}>About</Text>
+            <Text style={styles.arrow}>{'>'}</Text>
+          </Pressable>
+
         </View>
+
+        {/* Button */}
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={({ pressed }) => [
+            styles.button,
+            pressed && styles.buttonPressed,
+          ]}
+        >
+          <Ionicons name="chevron-back" size={24} color="white" />
+          <Text style={styles.buttonText}>Back</Text>
+        </Pressable>
+
       </ScrollView>
     </LinearGradient>
   );
@@ -35,57 +77,82 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   content: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 20,
+    paddingTop: 60,
   },
-  header: {
-    marginBottom: 20,
-  },
+
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#fff',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 4,
+    marginBottom: 20,
   },
+
   card: {
-    borderRadius: 20,
-    padding: 25,
-    width: '100%',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 30,
+  },
+
+  sectionTitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.5)',
+    marginBottom: 10,
+  },
+
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 14,
   },
-  description: {
-    fontSize: 18,
+
+  settingTitle: {
+    fontSize: 16,
     color: '#fff',
-    textAlign: 'center',
-    lineHeight: 28,
-    marginBottom: 25,
+    fontWeight: '500',
   },
+
+  settingSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.5)',
+  },
+
+  arrow: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 20,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginVertical: 10,
+  },
+
   button: {
-    backgroundColor: '#FF6B6B',
+    flexDirection: 'row',
+    backgroundColor: '#6C63FF',
     paddingVertical: 16,
-    paddingHorizontal: 50,
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 6,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
+
   buttonPressed: {
-    backgroundColor: '#FF5252',
+    opacity: 0.8,
     transform: [{ scale: 0.97 }],
   },
+
   buttonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

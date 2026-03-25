@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Pressable, Animated, Dimensions } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { globalstyles } from '../../style/GlobalStyle';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,8 +14,7 @@ const BOARD_SIZE = Math.min(
     height - SAFE_VERTICAL_SPACE
 );
 
-
-const TicTacToeScreen = () => {
+const TicTacToeScreen = ({ navigation }) => {
     const [board, setBoard] = useState(Array(9).fill(null));
     const [isXNext, setIsXNext] = useState(true);
     const [scaleAnims] = useState(Array(9).fill(null).map(() => new Animated.Value(1)));
@@ -70,7 +69,15 @@ const TicTacToeScreen = () => {
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <View style={globalstyles.container}>
+            <View style={styles.header}>
+                <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+                    <Ionicons name="arrow-back" size={24} color="#2b0202ff" />
+                </Pressable>
+                <Text style={styles.title}>Tic Tac Toe</Text>
+                <View style={{ width: 44 }} />
+            </View>
+
+            <View style={styles.container}>
                 {/* Status Banner */}
                 <View style={styles.statusContainer}>
                     <Text style={styles.statusText}>{status}</Text>
@@ -116,23 +123,51 @@ const TicTacToeScreen = () => {
                         <Text style={styles.resetButtonText}>New Game 🔄 </Text>
                     </Pressable>
                 )}
-
-                {/* Confetti */}
-                {showConfetti && (
-                    <ConfettiCannon
-                        count={120}
-                        fadeOut
-                        explosionSpeed={350}
-                        fallSpeed={2800}
-                        origin={{ x: width / 2, y: 0 }}
-                    />
-                )}
             </View>
+
+            <View style={styles.rulesContainer}>
+                <Text style={styles.rulesTitle}> Rules </Text>
+                <Text style={styles.rulesText}> 1. The first player to get three of their marks in a row (horizontally, vertically, or diagonally) wins. </Text>
+                <Text style={styles.rulesText}> 2. If all nine squares are filled and no player has three in a row, the game is a draw. </Text>
+            </View>
+
+            {/* Confetti */}
+            {showConfetti && (
+                <ConfettiCannon
+                    count={120}
+                    fadeOut
+                    explosionSpeed={350}
+                    fallSpeed={2800}
+                    origin={{ x: width / 2, y: 0 }}
+                />
+            )}
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        marginBottom: 10,
+    },
+    backBtn: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: '900',
+        color: '#1d0101ff',
+        letterSpacing: 1,
+    },
     statusContainer: {
         marginVertical: 20,
         paddingHorizontal: 16,
@@ -193,13 +228,40 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.35,
         shadowRadius: 8,
-        elevation: 10,
-        marginTop: 30,
+        elevation: 6,
+        marginTop: 10,
     },
     resetButtonText: {
         fontWeight: 'bold',
         fontSize: 18,
         color: '#fff',
+        textAlign: 'center',
+    },
+    rulesContainer: {
+        marginVertical: 20,
+        paddingHorizontal: 8,
+        paddingVertical: 6,
+        borderRadius: 12,
+        width: '90%',
+        backgroundColor: '#c4eedcff',
+        alignSelf: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
+        gap: 10,
+    },
+    rulesTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#784575',
+        textAlign: 'center',
+    },
+    rulesText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#784575',
         textAlign: 'center',
     },
 });

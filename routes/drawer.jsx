@@ -6,7 +6,7 @@ import {
 import AboutPage from '../screens/AboutPage';
 import SettingsPage from '../screens/SettingsPage';
 import GameStack from './gameStack';
-import { NavigationContainer } from '@react-navigation/native';
+import { getFocusedRouteNameFromRoute, NavigationContainer } from '@react-navigation/native';
 import { Text, View, StyleSheet } from 'react-native';
 import { LogoImage } from '../shared/drawerIcon';
 import DrawerIcon from '../shared/drawerIcon';
@@ -49,10 +49,21 @@ function RootDrawerNavigation() {
                 <Drawer.Screen
                     name="Games"
                     component={GameStack}
-                    options={{
-                        drawerIcon: ({ focused }) =>
-                            <DrawerIcon name={focused ? 'videogame-asset' : 'videogame-asset-off'} focused={focused} />,
-                        headerTitle: () => <LogoImage title_two={'Hub'} title_one={'Games'} />,
+                    options={({ route }) => {
+                        const routeName = getFocusedRouteNameFromRoute(route) ?? 'GamesHome';
+
+                        return {
+                            drawerIcon: ({ focused }) => (
+                                <DrawerIcon
+                                    name={focused ? 'videogame-asset' : 'videogame-asset-off'}
+                                    focused={focused}
+                                />
+                            ),
+                            headerShown: routeName === 'GamesHome',
+                            headerTitle: () => (
+                                <LogoImage title_two={'Hub'} title_one={'Games'} />
+                            ),
+                        };
                     }}
                 />
                 <Drawer.Screen

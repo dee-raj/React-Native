@@ -277,6 +277,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginTop: 20,
         marginBottom: 20,
     },
     backBtn: {
@@ -352,6 +353,9 @@ const styles = StyleSheet.create({
     statItem: {
         alignItems: 'center',
         width: 100,
+        backgroundColor: '#784575',
+        padding: 5,
+        borderRadius: 5,
     },
     restartBtn: {
         width: 150,

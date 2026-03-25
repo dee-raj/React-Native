@@ -18,6 +18,8 @@ import SpeakAndLearnScreen from '../games/SpeakAndLearn/SpeakAndLearnScreen';
 import ShapeTapGameScreen from '../games/ShapeTapGame/ShapeTapGameScreen';
 import SudokuScreen from '../games/Sudoku/SudokuScreen';
 import SudokuLevelSelectionScreen from '../games/Sudoku/SudokuLevelSelectionScreen';
+import CryptogramLevelSelectionScreen from '../games/Cryptogram/CryptogramLevelSelectionScreen';
+import CryptogramScreen from '../games/Cryptogram/CryptogramScreen';
 
 
 const Stack = createStackNavigator();
@@ -128,6 +130,16 @@ const GameStack = () => {
                 name="Sudoku"
                 component={SudokuScreen}
                 options={{ title: 'Sudoku', headerShown: false }}
+            />
+            <Stack.Screen
+                name="CryptogramLevelSelection"
+                component={CryptogramLevelSelectionScreen}
+                options={{ title: 'Cryptogram Levels', headerShown: false }}
+            />
+            <Stack.Screen
+                name="CryptogramGame"
+                component={CryptogramScreen}
+                options={{ title: 'Cryptogram', headerShown: false }}
             />
 
         </Stack.Navigator>

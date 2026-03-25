@@ -527,7 +527,7 @@ const getConnectionStyle = (other, self, size) => {
 };
 
 const styles = StyleSheet.create({
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingTop: 10, marginBottom: 10 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingTop: 10, marginTop: 20, marginBottom: 10 },
     backBtn: { fontSize: 18, color: '#784575', fontWeight: 'bold' },
     lvlTitle: { fontSize: 24, fontWeight: 'bold' },
     infoText: { fontSize: 12, color: '#666' },

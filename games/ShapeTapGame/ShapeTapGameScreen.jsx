@@ -7,7 +7,7 @@ import {
     Dimensions,
     Animated,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,7 +27,7 @@ const SHAPES = [
 const SUCCESS_SPEECH = ["Yay!", "Woohoo!", "Hooray!", "Yes!", "Bravo!", "Awesome!", "Great!", "Wow!", 'Correct!'];
 const TRY_AGAIN_SPEECH = ["Oops!", "Uh-oh!", "Hmm!", "Try again!", "Almost!", "Not yet!", "Whoops!", "Nooo!"];
 
-const ShapeTapGameScreen = () => {
+const ShapeTapGameScreen = ({ navigation }) => {
     const [targetShape, setTargetShape] = useState(null);
     const [shapesOrder, setShapesOrder] = useState([...SHAPES]);
     const [feedback, setFeedback] = useState('');
@@ -114,11 +114,16 @@ const ShapeTapGameScreen = () => {
             colors={['#E0F7FA', '#E1F5FE']}
             style={styles.container}
         >
+            <View style={styles.header}>
+                <Pressable onPress={() => navigation.goBack()}>
+                    <View style={styles.backBtn}>
+                        <Ionicons name="arrow-back" size={24} color="#321" />
+                        <Text style={styles.backBtnText}> Go Back</Text>
+                    </View>
+                </Pressable>
+            </View>
+
             <SafeAreaView style={{ flex: 1 }}>
-                {/* Feedback / Prompt */}
-                <Animated.View style={[styles.promptCard, { transform: [{ scale: scaleAnim }] }]}>
-                    <Text style={[styles.promptText, { color: targetShape?.color }]}>{feedback}</Text>
-                </Animated.View>
 
                 {/* Shapes Grid */}
                 <View style={styles.grid}>
@@ -137,6 +142,11 @@ const ShapeTapGameScreen = () => {
                     ))}
                 </View>
 
+                {/* Feedback / Prompt */}
+                <Animated.View style={[styles.promptCard, { transform: [{ scale: scaleAnim }] }]}>
+                    <Text style={[styles.promptText, { color: targetShape?.color }]}>{feedback}</Text>
+                </Animated.View>
+
                 {/* Confetti */}
                 {showConfetti && <ConfettiCannon count={180} origin={{ x: width / 2, y: 0 }} fadeOut />}
             </SafeAreaView>
@@ -145,14 +155,31 @@ const ShapeTapGameScreen = () => {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    container: { flex: 1, marginTop: 32 },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+    },
+    backBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 20,
+    },
+    backBtnText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#321',
+    },
     promptCard: {
         alignSelf: 'center',
         backgroundColor: '#FFF',
         paddingVertical: 24,
         paddingHorizontal: 40,
         borderRadius: 32,
-        marginBottom: 40,
+        marginTop: 40,
         elevation: 12,
         shadowColor: '#000',
         shadowOpacity: 0.15,

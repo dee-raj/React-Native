@@ -6,9 +6,11 @@ import {
     FlatList,
     TouchableOpacity,
     Dimensions,
+    Pressable,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { globalstyles } from "../../style/GlobalStyle";
+import { Ionicons } from "@expo/vector-icons";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const LOG_KEY = "@sliding_puzzle_levels";
@@ -108,8 +110,15 @@ const SlidingPuzzleLevelSelectionScreen = ({ navigation }) => {
             <View style={styles.bgTop} />
             <View style={styles.bgBottom} />
 
-            {/* Header */}
+            <View style={styles.backBtnContainer}>
+                <Pressable onPress={() => navigation.goBack()}>
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                </Pressable>
+                <Text style={styles.backBtn}> Back</Text>
+            </View>
+
             <View style={styles.header}>
+                {/* Header */}
                 <Text style={styles.headerTitle}>Sliding Puzzle Levels</Text>
                 <Text style={styles.headerInfo}>Highest: {currentLevel}</Text>
             </View>
@@ -150,8 +159,21 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.bgBottom,
     },
 
-    header: {
+    backBtnContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
         marginTop: 40,
+        marginHorizontal: 16,
+        marginBottom: 16,
+    },
+
+    backBtn: {
+        fontSize: 16,
+        color: "white",
+    },
+
+    header: {
         marginHorizontal: 16,
         paddingVertical: 12,
         borderRadius: 12,

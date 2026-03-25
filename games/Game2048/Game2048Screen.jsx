@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions, PanResponder, Pressable, Animated }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
+import { Ionicons } from '@expo/vector-icons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_SIZE = 4;
@@ -219,10 +220,13 @@ const Game2048Screen = ({ navigation }) => {
             style={globalstyles.container}
             {...(!gameOver ? panResponder.panHandlers : {})}
         >
-            <View style={styles.header}>
+            <View style={[styles.header, { marginTop: 24 }]}>
                 <View style={styles.topRow}>
                     <Pressable onPress={() => navigation.goBack()}>
-                        <Text style={styles.backBtn}>← Back</Text>
+                        <View style={styles.backBtn}>
+                            <Ionicons name="arrow-back" size={24} color="#321" />
+                            <Text style={styles.backBtnText}> Go Back</Text>
+                        </View>
                     </Pressable>
                     <Text style={styles.title}>2048</Text>
                 </View>
@@ -280,7 +284,7 @@ const Game2048Screen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     header: {
-        marginBottom: 20,
+        marginVertical: 20,
     },
     topRow: {
         flexDirection: 'row',
@@ -288,13 +292,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     backBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    backBtnText: {
         fontSize: 16,
         fontWeight: '700',
         color: '#784575',
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        borderRadius: 10,
-        backgroundColor: '#f3e5f5',
     },
     title: {
         fontSize: 42,

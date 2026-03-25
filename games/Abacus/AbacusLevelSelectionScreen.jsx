@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     header: {
         alignItems: "center",
         paddingHorizontal: 20,
-        marginBottom: 20,
+        marginTop: 32,
     },
 
     backBtn: {

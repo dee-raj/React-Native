@@ -83,6 +83,13 @@ const GAMES = [
         family: 'FontAwesome6',
         category: 'Puzzles',
     },
+    {
+        name: 'Cryptogram',
+        route: 'CryptogramLevelSelection',
+        icon: 'key',
+        family: 'FontAwesome6',
+        category: 'Puzzles',
+    },
 ];
 
 const GamesHome = ({ navigation }) => {

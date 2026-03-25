@@ -6,8 +6,10 @@ import {
     FlatList,
     TouchableOpacity,
     Dimensions,
+    Pressable,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const STORAGE_KEY = "@memory_game_progress";
@@ -92,7 +94,13 @@ const LevelSelectionScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Memory Game Levels</Text>
+            <View style={styles.header}>
+                <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+                    <Ionicons name="arrow-back" size={24} color="#fff" />
+                </Pressable>
+                <Text style={styles.title}>Memory Game Levels</Text>
+                <View style={{ width: 44 }} />
+            </View>
 
             <Text style={styles.subtitle}>
                 Highest Level: {currentLevel}
@@ -114,14 +122,36 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#1b4db1",
-        paddingTop: 20,
+        marginTop: 24,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        marginBottom: 10,
+    },
+    backBtn: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     title: {
-        color: "#fff",
-        fontSize: 26,
-        fontWeight: "900",
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginLeft: 12,
+        letterSpacing: 1,
+    },
+    subtitle: {
+        color: "#cfd8ff",
         textAlign: "center",
-        marginBottom: 4,
+        marginBottom: 20,
+        fontSize: 14,
     },
     subtitle: {
         color: "#cfd8ff",
