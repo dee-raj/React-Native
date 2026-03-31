@@ -264,6 +264,21 @@ const SudokuScreen = ({ navigation, route }) => {
         return false;
     };
 
+    const numberCounts = React.useMemo(() => {
+        const counts = Array(10).fill(0);
+        if (solution && solution.length > 0 && board && board.length > 0) {
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const val = board[r]?.[c];
+                    if (val !== 0 && solution[r] && val === solution[r][c]) {
+                        counts[val]++;
+                    }
+                }
+            }
+        }
+        return counts;
+    }, [board, solution]);
+
     if (board.length === 0) {
         return (
             <SafeAreaView style={styles.safeArea}>
@@ -387,42 +402,72 @@ const SudokuScreen = ({ navigation, route }) => {
                 {/* Number Pad */}
                 <View style={styles.pad}>
                     <View style={styles.padRow}>
-                        {[1, 2, 3, 4, 5].map(num => (
-                            <Pressable
-                                key={num}
-                                style={[
-                                    styles.padButton,
-                                    highlightNumber === num && styles.padButtonActive,
-                                    isInputBlocked && styles.padButtonDisabled,
-                                ]}
-                                onPress={() => handleNumberInput(num)}
-                                disabled={isInputBlocked}
-                            >
-                                <Text style={[
-                                    styles.padText,
-                                    highlightNumber === num && styles.padTextActive,
-                                ]}>{num}</Text>
-                            </Pressable>
-                        ))}
+                        {[1, 2, 3, 4, 5].map(num => {
+                            const count = numberCounts[num] || 0;
+                            const isCompleted = count >= 9;
+                            const remaining = 9 - count;
+
+                            return (
+                                <Pressable
+                                    key={num}
+                                    style={[
+                                        styles.padButton,
+                                        highlightNumber === num && styles.padButtonActive,
+                                        isInputBlocked && styles.padButtonDisabled,
+                                        isCompleted && styles.padButtonHidden,
+                                    ]}
+                                    onPress={() => handleNumberInput(num)}
+                                    disabled={isInputBlocked || isCompleted}
+                                >
+                                    <Text style={[
+                                        styles.padText,
+                                        highlightNumber === num && styles.padTextActive,
+                                    ]}>{num}</Text>
+                                    {!isCompleted && (
+                                        <Text style={[
+                                            styles.remainingText,
+                                            highlightNumber === num && styles.remainingTextActive
+                                        ]}>
+                                            {remaining} left
+                                        </Text>
+                                    )}
+                                </Pressable>
+                            );
+                        })}
                     </View>
                     <View style={styles.padRow}>
-                        {[6, 7, 8, 9].map(num => (
-                            <Pressable
-                                key={num}
-                                style={[
-                                    styles.padButton,
-                                    highlightNumber === num && styles.padButtonActive,
-                                    isInputBlocked && styles.padButtonDisabled,
-                                ]}
-                                onPress={() => handleNumberInput(num)}
-                                disabled={isInputBlocked}
-                            >
-                                <Text style={[
-                                    styles.padText,
-                                    highlightNumber === num && styles.padTextActive,
-                                ]}>{num}</Text>
-                            </Pressable>
-                        ))}
+                        {[6, 7, 8, 9].map(num => {
+                            const count = numberCounts[num] || 0;
+                            const isCompleted = count >= 9;
+                            const remaining = 9 - count;
+
+                            return (
+                                <Pressable
+                                    key={num}
+                                    style={[
+                                        styles.padButton,
+                                        highlightNumber === num && styles.padButtonActive,
+                                        isInputBlocked && styles.padButtonDisabled,
+                                        isCompleted && styles.padButtonHidden,
+                                    ]}
+                                    onPress={() => handleNumberInput(num)}
+                                    disabled={isInputBlocked || isCompleted}
+                                >
+                                    <Text style={[
+                                        styles.padText,
+                                        highlightNumber === num && styles.padTextActive,
+                                    ]}>{num}</Text>
+                                    {!isCompleted && (
+                                        <Text style={[
+                                            styles.remainingText,
+                                            highlightNumber === num && styles.remainingTextActive
+                                        ]}>
+                                            {remaining} left
+                                        </Text>
+                                    )}
+                                </Pressable>
+                            );
+                        })}
                         <Pressable
                             style={[
                                 styles.padButton,
@@ -668,13 +713,14 @@ const styles = StyleSheet.create({
     },
     padButton: {
         width: (width - 100) / 5,
-        height: 52,
+        height: 56,
         backgroundColor: 'rgba(255,255,255,0.12)',
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 12,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',
+        position: 'relative',
     },
     padButtonActive: {
         backgroundColor: '#4A90E2',
@@ -682,6 +728,9 @@ const styles = StyleSheet.create({
     },
     padButtonDisabled: {
         opacity: 0.3,
+    },
+    padButtonHidden: {
+        opacity: 0,
     },
     eraseButton: {
         backgroundColor: 'rgba(239,68,68,0.3)',
@@ -693,6 +742,16 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     padTextActive: {
+        color: '#FFFFFF',
+    },
+    remainingText: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 10,
+        fontWeight: '700',
+        marginTop: 2,
+        letterSpacing: 0.5,
+    },
+    remainingTextActive: {
         color: '#FFFFFF',
     },
 

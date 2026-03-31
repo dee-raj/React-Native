@@ -279,7 +279,7 @@ const OnetMasterScreen = ({ navigation, route }) => {
 
     const shuffleGrid = useCallback((gridToShuffle) => {
         const sourceGrid = gridToShuffle || grid;
-        const flatTiles = sourceGrid.flat().filter(t => t !== null);
+        const flatTiles = sourceGrid?.flat().filter(t => t !== null);
         flatTiles.sort(() => Math.random() - 0.5);
 
         const newGrid = [];
