@@ -1,61 +1,175 @@
+import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, Text, View, StyleSheet, ScrollView } from 'react-native';
+import { Pressable, Text, View, StyleSheet, ScrollView, Linking, Alert } from 'react-native';
+import { useTheme } from '../theme/ThemeContext';
+import { Spacing, Typography, BorderRadius, Shadows } from '../theme/Theme';
+import ActionButton from '../shared/ActionButton';
+import { shareApp } from '../shared/SharingManager';
+
+const APP_VERSION = '1.1.1';
+const BUILD_NUMBER = '3';
 
 const games = [
-    'Tic Tac Toe', 'Memory Game', '2048', 'Onet Master',
+    'Tic Tac Toe', 'Memory Match', '2048', 'Onet Master',
     'Sliding Puzzle', 'Flow Pipes', 'Abacus Math',
     'Speak & Learn', 'Shape Tap', 'Sudoku', 'Cryptogram'
 ];
 
+const libraries = [
+    { name: 'React Native', description: 'Mobile framework' },
+    { name: 'Expo', description: 'Development platform' },
+    { name: 'React Navigation', description: 'Navigation' },
+    { name: 'expo-linear-gradient', description: 'Gradients' },
+    { name: 'expo-audio', description: 'Sound effects' },
+    { name: 'expo-speech', description: 'Text-to-speech' },
+    { name: 'AsyncStorage', description: 'Data persistence' },
+    { name: 'Confetti Cannon', description: 'Celebrations' },
+];
+
 const AboutPage = ({ navigation }) => {
+    const { colors, gradients } = useTheme();
+
+    const handleEmail = () => {
+        Linking.openURL('mailto:dhurbaraj343sky@gmail.com?subject=GameGroup Feedback');
+    };
+
+    const handleGitHub = () => {
+        Linking.openURL('https://github.com/dee-raj');
+    };
+
+    const handleShare = async () => {
+        await shareApp();
+    };
+
     return (
         <LinearGradient
-            colors={['#0f2027', '#203a43', '#2c5364']}
+            colors={gradients.background}
             style={styles.container}
         >
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
                 {/* Header */}
-                <Text style={styles.title}>Game Hub</Text>
-                <Text style={styles.subtitle}>
-                    Fun. Smart. Addictive.
-                </Text>
-
-                {/* Glass Card */}
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>🎮 About</Text>
-                    <Text style={styles.description}>
-                        Explore a collection of fun and brain-boosting games designed to challenge your skills and keep you entertained.
-                    </Text>
-
-                    <Text style={styles.sectionTitle}>✨ Games</Text>
-
-                    {/* Games Grid */}
-                    <View style={styles.gamesGrid}>
-                        {games.map((game, index) => (
-                            <View key={index} style={styles.gameChip}>
-                                <Text style={styles.gameText}>{game}</Text>
-                            </View>
-                        ))}
+                <View style={styles.headerSection}>
+                    <View style={styles.appIconContainer}>
+                        <Ionicons name="game-controller" size={48} color="#FFF" />
                     </View>
-
-                    <Text style={styles.footerText}>
-                        Play, learn, and enjoy a smarter way to have fun.
+                    <Text style={[styles.title, { color: colors.text }]}>GameGroup</Text>
+                    <Text style={[styles.version, { color: colors.textSecondary }]}>
+                        Version {APP_VERSION} (Build {BUILD_NUMBER})
+                    </Text>
+                    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+                        Fun. Smart. Addictive.
                     </Text>
                 </View>
 
-                {/* Button */}
-                <Pressable
-                    onPress={() => navigation.goBack()}
-                    style={({ pressed }) => [
-                        styles.button,
-                        pressed && styles.buttonPressed,
-                    ]}
-                >
-                    <Ionicons name="chevron-back" size={24} color="white" />
-                    <Text style={styles.buttonText}>Back to Home</Text>
-                </Pressable>
+                {/* Developer Section */}
+                <View style={[styles.card, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>👨‍💻 Developer</Text>
+
+                    <View style={styles.developerInfo}>
+                        <View style={styles.developerAvatar}>
+                            <Ionicons name="person" size={32} color={colors.primary} />
+                        </View>
+                        <View style={styles.developerDetails}>
+                            <Text style={[styles.developerName, { color: colors.text }]}>
+                                Dhurbaraj N. Joshi
+                            </Text>
+                            <Text style={[styles.developerRole, { color: colors.textSecondary }]}>
+                                Full Stack Developer
+                            </Text>
+                        </View>
+                    </View>
+
+                    <Text style={[styles.developerBio, { color: colors.textSecondary }]}>
+                        Passionate about creating engaging mobile experiences and brain-training games.
+                        Building apps that make learning fun!
+                    </Text>
+
+                    <View style={styles.socialLinks}>
+                        <Pressable
+                            style={[styles.socialButton, { backgroundColor: colors.surfaceHigh }]}
+                            onPress={handleGitHub}
+                        >
+                            <Ionicons name="logo-github" size={20} color={colors.text} />
+                            <Text style={[styles.socialText, { color: colors.text }]}>@dee-raj</Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={[styles.socialButton, { backgroundColor: colors.surfaceHigh }]}
+                            onPress={handleEmail}
+                        >
+                            <Ionicons name="mail" size={20} color={colors.text} />
+                            <Text style={[styles.socialText, { color: colors.text }]}>Email</Text>
+                        </Pressable>
+                    </View>
+                </View>
+
+                {/* Games Section */}
+                <View style={[styles.card, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>🎮 Games ({games.length})</Text>
+                    <View style={styles.gamesGrid}>
+                        {games.map((game, index) => (
+                            <View
+                                key={index}
+                                style={[styles.gameChip, { backgroundColor: colors.surfaceHigh }]}
+                            >
+                                <Text style={[styles.gameText, { color: colors.text }]}>{game}</Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+
+                {/* References Section */}
+                <View style={[styles.card, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>📚 References</Text>
+                    <Text style={[styles.refDescription, { color: colors.textSecondary }]}>
+                        Built with these amazing libraries:
+                    </Text>
+                    {libraries.map((lib, index) => (
+                        <View
+                            key={index}
+                            style={[styles.libItem, { borderBottomColor: colors.border }]}
+                        >
+                            <Text style={[styles.libName, { color: colors.text }]}>{lib.name}</Text>
+                            <Text style={[styles.libDesc, { color: colors.textSecondary }]}>{lib.description}</Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* Share Section */}
+                <View style={[styles.card, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>📤 Share App</Text>
+                    <Text style={[styles.shareDescription, { color: colors.textSecondary }]}>
+                        Share GameGroup with your friends and family!
+                    </Text>
+                    <ActionButton
+                        label="Share GameGroup"
+                        onPress={handleShare}
+                        variant="primary"
+                        icon="share-social"
+                        iconPosition="left"
+                    />
+                </View>
+
+                {/* Footer */}
+                <Text style={[styles.footer, { color: colors.textTertiary }]}>
+                    Made with ❤️ using React Native + Expo
+                </Text>
+                <Text style={[styles.copyright, { color: colors.textTertiary }]}>
+                    © 2024 Dhurbaraj N. Joshi. All rights reserved.
+                </Text>
+
+                {/* Back Button */}
+                <View style={styles.buttonContainer}>
+                    <ActionButton
+                        label="Back to Home"
+                        onPress={() => navigation.goBack()}
+                        variant="secondary"
+                        icon="chevron-back"
+                        iconPosition="left"
+                    />
+                </View>
 
             </ScrollView>
         </LinearGradient>
@@ -65,91 +179,142 @@ const AboutPage = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginTop: -32,
     },
     content: {
-        padding: 20,
-        paddingTop: 60,
+        padding: Spacing.lg,
+        paddingTop: Spacing.huge,
+        paddingBottom: Spacing.huge,
     },
-
+    headerSection: {
+        alignItems: 'center',
+        marginBottom: Spacing.xl,
+    },
+    appIconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 20,
+        backgroundColor: 'rgba(102, 126, 234, 0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: Spacing.md,
+    },
     title: {
-        fontSize: 34,
-        fontWeight: '800',
-        color: '#fff',
-        letterSpacing: 1,
+        fontSize: Typography.sizes.hero,
+        fontWeight: Typography.weights.black,
     },
-
+    version: {
+        fontSize: Typography.sizes.sm,
+        marginTop: Spacing.xs,
+    },
     subtitle: {
-        fontSize: 16,
-        color: 'rgba(255,255,255,0.6)',
-        marginBottom: 25,
+        fontSize: Typography.sizes.md,
+        marginTop: Spacing.xs,
     },
-
     card: {
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        borderRadius: 24,
-        padding: 20,
+        borderRadius: BorderRadius.xl,
+        padding: Spacing.lg,
+        marginBottom: Spacing.lg,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
-        marginBottom: 30,
     },
-
     sectionTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#fff',
-        marginBottom: 10,
-        marginTop: 10,
+        fontSize: Typography.sizes.lg,
+        fontWeight: Typography.weights.bold,
+        marginBottom: Spacing.md,
     },
-
-    description: {
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.7)',
-        lineHeight: 20,
-        marginBottom: 10,
+    developerInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: Spacing.md,
     },
-
+    developerAvatar: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: Spacing.md,
+    },
+    developerDetails: {
+        flex: 1,
+    },
+    developerName: {
+        fontSize: Typography.sizes.lg,
+        fontWeight: Typography.weights.bold,
+    },
+    developerRole: {
+        fontSize: Typography.sizes.sm,
+        marginTop: 2,
+    },
+    developerBio: {
+        fontSize: Typography.sizes.md,
+        lineHeight: 22,
+        marginBottom: Spacing.md,
+    },
+    socialLinks: {
+        flexDirection: 'row',
+        gap: Spacing.sm,
+    },
+    socialButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: Spacing.md,
+        borderRadius: BorderRadius.md,
+        gap: Spacing.sm,
+    },
+    socialText: {
+        fontSize: Typography.sizes.sm,
+        fontWeight: Typography.weights.medium,
+    },
     gamesGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        marginTop: 10,
+        gap: Spacing.sm,
     },
-
     gameChip: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 20,
-        marginRight: 8,
-        marginBottom: 8,
+        paddingVertical: Spacing.sm,
+        paddingHorizontal: Spacing.md,
+        borderRadius: BorderRadius.full,
     },
-
     gameText: {
-        color: '#fff',
-        fontSize: 13,
+        fontSize: Typography.sizes.sm,
     },
-
-    footerText: {
-        marginTop: 10,
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.5)',
+    refDescription: {
+        fontSize: Typography.sizes.sm,
+        marginBottom: Spacing.md,
     },
-
-    button: {
-        backgroundColor: '#6C63FF',
-        paddingVertical: 16,
-        borderRadius: 16,
-        alignItems: 'center',
+    libItem: {
+        paddingVertical: Spacing.sm,
+        borderBottomWidth: 1,
     },
-
-    buttonPressed: {
-        opacity: 0.8,
-        transform: [{ scale: 0.97 }],
+    libName: {
+        fontSize: Typography.sizes.md,
+        fontWeight: Typography.weights.semibold,
     },
-
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
+    libDesc: {
+        fontSize: Typography.sizes.sm,
+        marginTop: 2,
+    },
+    shareDescription: {
+        fontSize: Typography.sizes.md,
+        marginBottom: Spacing.md,
+    },
+    footer: {
+        textAlign: 'center',
+        fontSize: Typography.sizes.sm,
+        marginTop: Spacing.lg,
+    },
+    copyright: {
+        textAlign: 'center',
+        fontSize: Typography.sizes.xs,
+        marginTop: Spacing.xs,
+    },
+    buttonContainer: {
+        marginTop: Spacing.xl,
     },
 });
 

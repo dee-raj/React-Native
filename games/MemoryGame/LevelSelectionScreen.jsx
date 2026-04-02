@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#1b4db1",
-        marginTop: 24,
+        marginTop: 0,
     },
     header: {
         flexDirection: 'row',
@@ -146,12 +146,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginLeft: 12,
         letterSpacing: 1,
-    },
-    subtitle: {
-        color: "#cfd8ff",
-        textAlign: "center",
-        marginBottom: 20,
-        fontSize: 14,
     },
     subtitle: {
         color: "#cfd8ff",

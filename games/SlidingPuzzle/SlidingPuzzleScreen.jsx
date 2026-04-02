@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
 import Card from '../../shared/Card';
+import soundManager from '../../shared/SoundManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const LOG_KEY = '@sliding_puzzle_levels';
@@ -82,8 +83,11 @@ const SlidingPuzzleScreen = ({ navigation, route }) => {
         tiles.push(null); // Empty space
 
         // Shuffle until solvable
+        let shuffleAttempts = 0;
         do {
             tiles.sort(() => Math.random() - 0.5);
+            shuffleAttempts++;
+            if (shuffleAttempts >= 1000) break;
         } while (!isSolvable(tiles, config.size) || isSorted(tiles));
 
         const newGrid = [];
@@ -143,6 +147,7 @@ const SlidingPuzzleScreen = ({ navigation, route }) => {
             (Math.abs(c - emptyC) === 1 && r === emptyR);
 
         if (isAdjacent) {
+            soundManager.playSlide();
             const newGrid = grid.map(row => [...row]);
             newGrid[emptyR][emptyC] = grid[r][c];
             newGrid[r][c] = null;
@@ -156,6 +161,7 @@ const SlidingPuzzleScreen = ({ navigation, route }) => {
                 const newCompleted = [...new Set([...completedLevels, level])].sort((a, b) => a - b);
                 setCompletedLevels(newCompleted);
                 saveProgress(nextLvl, newCompleted);
+                soundManager.playWin();
 
                 // Paced celebration
                 setTimeout(() => setShowConfetti(true), 300);
@@ -277,7 +283,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 20,
+        marginTop: 0,
         marginBottom: 20,
     },
     backBtn: {

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import soundManager from '../../shared/SoundManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -256,6 +257,7 @@ const MemoryGameScreen = ({ route, navigation }) => {
         if (isProcessing || flippedIndices.includes(index) || matchedPairs.includes(cards[index].content) || showResults) {
             return;
         }
+        soundManager.playFlip();
 
         if (flippedIndices.length === 0) {
             setFlippedIndices([index]);
@@ -266,6 +268,7 @@ const MemoryGameScreen = ({ route, navigation }) => {
             setAttempts(prev => prev + 1);
 
             if (cards[firstIndex].content === cards[index].content) {
+                soundManager.playMatch();
                 const newMatched = [...matchedPairs, cards[firstIndex].content];
                 setMatchedPairs(newMatched);
                 setFlippedIndices([]);
@@ -276,9 +279,11 @@ const MemoryGameScreen = ({ route, navigation }) => {
                     setCompletedLevels(updatedCompleted);
                     saveProgress(level + 1, updatedCompleted);
                     setShowConfetti(true);
+                    soundManager.playWin();
                     setTimeout(() => setShowResults(true), 500);
                 }
             } else {
+                soundManager.playMismatch();
                 setFailures(prev => prev + 1);
                 setTimeout(() => {
                     setFlippedIndices([]);
@@ -437,6 +442,7 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: COLORS.bgStart,
+        marginTop: -31
     },
     container: {
         flex: 1,

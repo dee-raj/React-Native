@@ -20,6 +20,7 @@ import SudokuScreen from '../games/Sudoku/SudokuScreen';
 import SudokuLevelSelectionScreen from '../games/Sudoku/SudokuLevelSelectionScreen';
 import CryptogramLevelSelectionScreen from '../games/Cryptogram/CryptogramLevelSelectionScreen';
 import CryptogramScreen from '../games/Cryptogram/CryptogramScreen';
+import DailyChallengeScreen from '../screens/DailyChallengeScreen';
 
 
 const Stack = createStackNavigator();
@@ -140,6 +141,11 @@ const GameStack = () => {
                 name="CryptogramGame"
                 component={CryptogramScreen}
                 options={{ title: 'Cryptogram', headerShown: false }}
+            />
+            <Stack.Screen
+                name="DailyChallenge"
+                component={DailyChallengeScreen}
+                options={{ title: 'Daily Challenge', headerShown: false }}
             />
 
         </Stack.Navigator>

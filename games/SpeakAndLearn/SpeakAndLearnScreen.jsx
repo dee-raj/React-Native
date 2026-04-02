@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Speech from 'expo-speech';
 
 import { Ionicons } from '@expo/vector-icons';
+import soundManager from '../../shared/SoundManager';
 
 const { width, height } = Dimensions.get('window');
 
@@ -114,6 +115,7 @@ const SpeakAndLearnScreen = ({ navigation }) => {
     };
 
     const toggleAutoplay = () => {
+        soundManager.playTap();
         setIsAutoplay((prev) => !prev);
     };
 
@@ -239,6 +241,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.Background,
+        marginTop: -31
     },
     header: {
         flexDirection: 'row',

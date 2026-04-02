@@ -1,57 +1,112 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, Text, View, StyleSheet, ScrollView, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import soundManager from '../shared/SoundManager';
+import { useTheme } from '../theme/ThemeContext';
+import { Spacing, Typography, BorderRadius } from '../theme/Theme';
+
+const SETTINGS_KEY = '@game_group_settings';
 
 const SettingsPage = ({ navigation }) => {
-  const [sound, setSound] = React.useState(true);
-  const [darkMode, setDarkMode] = React.useState(true);
+  const { colors, gradients, toggleTheme, isDark } = useTheme();
+  const [sound, setSound] = useState(true);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(SETTINGS_KEY);
+        if (saved) {
+          const settings = JSON.parse(saved);
+          setSound(settings.sound ?? true);
+        }
+      } catch (e) {
+        console.log('Failed to load settings', e);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const saveSetting = async (key, value) => {
+    try {
+      const saved = await AsyncStorage.getItem(SETTINGS_KEY);
+      const settings = saved ? JSON.parse(saved) : {};
+      settings[key] = value;
+      await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    } catch (e) {
+      console.log('Failed to save setting', e);
+    }
+  };
+
+  const handleSoundToggle = (value) => {
+    setSound(value);
+    soundManager.setEnabled(value);
+    saveSetting('sound', value);
+  };
+
+  const handleDarkModeToggle = (value) => {
+    toggleTheme();
+    saveSetting('darkMode', value);
+  };
 
   return (
     <LinearGradient
-      colors={['#0f2027', '#203a43', '#2c5364']}
+      colors={gradients.background}
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.content}>
 
         {/* Header */}
-        <Text style={styles.title}>Settings</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
         {/* Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
 
           {/* Section */}
-          <Text style={styles.sectionTitle}>Preferences</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Preferences</Text>
 
           {/* Setting Item */}
-          <View style={styles.settingRow}>
+          <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
             <View>
-              <Text style={styles.settingTitle}>Sound Effects</Text>
-              <Text style={styles.settingSubtitle}>Enable game sounds</Text>
+              <Text style={[styles.settingTitle, { color: colors.text }]}>Sound Effects</Text>
+              <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>Enable game sounds</Text>
             </View>
-            <Switch value={sound} onValueChange={setSound} />
+            <Switch
+              value={sound}
+              onValueChange={handleSoundToggle}
+              trackColor={{ false: colors.switchTrack, true: colors.primary }}
+              thumbColor={colors.switchThumb}
+            />
           </View>
 
-          <View style={styles.settingRow}>
+          <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
             <View>
-              <Text style={styles.settingTitle}>Dark Mode</Text>
-              <Text style={styles.settingSubtitle}>Better for night use</Text>
+              <Text style={[styles.settingTitle, { color: colors.text }]}>Dark Mode</Text>
+              <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
+                {isDark ? 'Currently dark theme' : 'Currently light theme'}
+              </Text>
             </View>
-            <Switch value={darkMode} onValueChange={setDarkMode} />
+            <Switch
+              value={isDark}
+              onValueChange={handleDarkModeToggle}
+              trackColor={{ false: colors.switchTrack, true: colors.primary }}
+              thumbColor={colors.switchThumb}
+            />
           </View>
 
           {/* Divider */}
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           {/* Action */}
-          <Pressable style={styles.settingRow}>
-            <Text style={styles.settingTitle}>Notifications</Text>
-            <Text style={styles.arrow}>{'>'}</Text>
+          <Pressable style={[styles.settingRow, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.settingTitle, { color: colors.text }]}>Notifications</Text>
+            <Text style={[styles.arrow, { color: colors.textSecondary }]}>{'>'}</Text>
           </Pressable>
 
-          <Pressable style={styles.settingRow}>
-            <Text style={styles.settingTitle}>About</Text>
-            <Text style={styles.arrow}>{'>'}</Text>
+          <Pressable style={[styles.settingRow, { borderBottomColor: colors.border }]} onPress={() => navigation.navigate('About')}>
+            <Text style={[styles.settingTitle, { color: colors.text }]}>About</Text>
+            <Text style={[styles.arrow, { color: colors.textSecondary }]}>{'>'}</Text>
           </Pressable>
 
         </View>
@@ -76,6 +131,7 @@ const SettingsPage = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: -32,
   },
 
   content: {

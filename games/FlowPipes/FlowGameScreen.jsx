@@ -4,8 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
 import Card from '../../shared/Card';
-
-const isMountedRef = { current: true };
+import soundManager from '../../shared/SoundManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const LOG_KEY = '@flow_pipes_levels';
@@ -131,6 +130,7 @@ const FlowGameScreen = ({ navigation, route }) => {
     const [filledCellsCount, setFilledCellsCount] = useState(0);
 
     const gridLayout = useRef({ x: 0, y: 0, width: 0, height: 0 });
+    const isMountedRef = useRef(true);
 
     // Refs for synchronization in PanResponder
     const gridRef = useRef([]);
@@ -314,13 +314,18 @@ const FlowGameScreen = ({ navigation, route }) => {
             }
 
             const existingIdx = currentPath.findIndex(p => p.r === r && p.c === c);
-            newPaths[currentActiveId] = existingIdx !== -1 ? currentPath.slice(0, existingIdx + 1) : [...currentPath, { r, c }];
+            if (existingIdx !== -1) {
+                newPaths[currentActiveId] = currentPath.slice(0, existingIdx + 1);
+            } else {
+                newPaths[currentActiveId] = [...currentPath, { r, c }];
+            }
 
             pathsRef.current = newPaths;
             setPaths(newPaths);
             const newFilled = calculateFilledCells(newPaths, currentConfig);
             setFilledCellsCount(newFilled);
             filledCountRef.current = newFilled;
+            soundManager.playConnect();
         }
     };
 
@@ -344,6 +349,7 @@ const FlowGameScreen = ({ navigation, route }) => {
                     const finalTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
                     setTimeTaken(finalTime);
                     gameWonRef.current = true;
+                    soundManager.playWin();
                     setIsSaving(true);
                     await saveProgress(levelRef.current);
                     if (isMountedRef.current) {

@@ -10,6 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../theme/ThemeContext';
+import { Typography } from '../theme/Theme';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 48) / 3;
@@ -93,6 +96,7 @@ const GAMES = [
 ];
 
 const GamesHome = ({ navigation }) => {
+    const { colors, gradients } = useTheme();
     const animatedValues = useRef(GAMES.map(() => new Animated.Value(0))).current;
 
     useEffect(() => {
@@ -145,13 +149,13 @@ const GamesHome = ({ navigation }) => {
                         </View>
                     )}
                 </Pressable>
-                <Text style={styles.gameLabel} numberOfLines={1}>{item.name}</Text>
+                <Text style={[styles.gameLabel, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
             </Animated.View>
         );
     };
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
             <FlatList
                 data={GAMES}
                 renderItem={renderGameItem}
@@ -159,6 +163,31 @@ const GamesHome = ({ navigation }) => {
                 numColumns={3}
                 contentContainerStyle={styles.gridContent}
                 showsVerticalScrollIndicator={false}
+                ListHeaderComponent={
+                    <Pressable
+                        onPress={() => navigation.navigate('DailyChallenge')}
+                        style={({ pressed }) => [
+                            styles.dailyChallengeBanner,
+                            pressed && styles.bannerPressed,
+                        ]}
+                    >
+                        <LinearGradient
+                            colors={gradients.accent}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.bannerGradient}
+                        >
+                            <View style={styles.bannerContent}>
+                                <Ionicons name="calendar" size={28} color="#FFF" />
+                                <View style={styles.bannerTextContainer}>
+                                    <Text style={styles.bannerTitle}>Daily Challenge</Text>
+                                    <Text style={styles.bannerSubtitle}>New challenge every day!</Text>
+                                </View>
+                                <Ionicons name="arrow-forward" size={24} color="#FFF" />
+                            </View>
+                        </LinearGradient>
+                    </Pressable>
+                }
             />
         </SafeAreaView>
     );
@@ -168,57 +197,46 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#8181b1ff',
-    },
-    searchContainer: {
-        paddingHorizontal: 16,
-        marginTop: 15,
-    },
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#1C1C1E',
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        height: 48,
-    },
-    searchIcon: {
-        marginRight: 10,
-    },
-    searchInput: {
-        flex: 1,
-        color: '#FFFFFF',
-        fontSize: 16,
-    },
-    tabsContainer: {
-        marginTop: 15,
-        paddingLeft: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#1C1C1E',
-    },
-    tabItem: {
-        marginRight: 25,
-        paddingVertical: 10,
-        alignItems: 'center',
-    },
-    tabText: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#8E8E93',
-    },
-    tabTextActive: {
-        color: '#A3FD50',
-    },
-    tabUnderline: {
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        height: 2,
-        backgroundColor: '#A3FD50',
-        borderRadius: 2,
+        marginTop: -32,
     },
     gridContent: {
         padding: 16,
         paddingBottom: 100,
+    },
+    dailyChallengeBanner: {
+        marginBottom: 16,
+        borderRadius: 16,
+        overflow: 'hidden',
+        elevation: 6,
+        shadowColor: '#FF6B6B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    bannerPressed: {
+        transform: [{ scale: 0.98 }],
+        opacity: 0.9,
+    },
+    bannerGradient: {
+        padding: 16,
+    },
+    bannerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    bannerTextContainer: {
+        flex: 1,
+    },
+    bannerTitle: {
+        fontSize: 18,
+        fontWeight: '800',
+        color: '#FFF',
+    },
+    bannerSubtitle: {
+        fontSize: 13,
+        color: 'rgba(255,255,255,0.85)',
+        marginTop: 2,
     },
     cardContainer: {
         width: COLUMN_WIDTH,
@@ -262,7 +280,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
         fontSize: 12,
         fontWeight: '500',
-        color: '#E5E5EA',
+        color: "white",
         textAlign: 'center',
     },
     bottomNav: {

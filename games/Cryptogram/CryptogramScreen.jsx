@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLevelData, STORAGE_KEY, getDifficultyList } from './CryptogramConfig';
+import soundManager from '../../shared/SoundManager';
 
 const { width } = Dimensions.get('window');
 const CELL_SIZE = Math.min(24, (width - 60) / 10);
@@ -105,11 +106,13 @@ const CryptogramScreen = ({ navigation, route }) => {
 
     const handleCipherSelect = (cipherLetter) => {
         if (gameWon || wrongGuesses >= maxLives) return;
+        soundManager.playTap();
         setSelectedCipher(prev => prev === cipherLetter ? null : cipherLetter);
     };
 
     const handlePlainSelect = (plainLetter) => {
         if (!selectedCipher || gameWon || wrongGuesses >= maxLives) return;
+        soundManager.playTap();
 
         const rev = reverseCipher();
         const correctAnswer = rev[selectedCipher];
@@ -119,15 +122,19 @@ const CryptogramScreen = ({ navigation, route }) => {
         if (plainLetter !== correctAnswer) {
             const newWrong = wrongGuesses + 1;
             setWrongGuesses(newWrong);
+            setSelectedCipher(null);
+            soundManager.playWrong();
             return;
         }
 
         const newGuesses = { ...guesses, [selectedCipher]: plainLetter };
         setGuesses(newGuesses);
+        soundManager.playCorrect();
 
         if (checkWin(newGuesses)) {
             setGameWon(true);
             setShowConfetti(true);
+            soundManager.playWin();
             clearInterval(timerRef.current);
             saveProgress();
         }
@@ -138,6 +145,7 @@ const CryptogramScreen = ({ navigation, route }) => {
     const handleHint = () => {
         if (hintsUsed >= maxHints || gameWon || wrongGuesses >= maxLives || !levelData) return;
 
+        soundManager.playHint();
         const rev = reverseCipher();
         const unguessed = levelData.uniqueLetters.filter(cipher => {
             return !guesses[cipher] && !revealedLetters.has(cipher);
@@ -456,8 +464,8 @@ const CryptogramScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1 },
-    container: { flex: 1 },
+    safeArea: { flex: 1, marginTop: -31 },
+    container: { flex: 1, marginTop: 0 },
     errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     errorText: { color: '#EF4444', fontSize: 16, fontWeight: '700', textAlign: 'center' },
     backButton: { marginTop: 16, backgroundColor: '#4A90E2', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 20 },

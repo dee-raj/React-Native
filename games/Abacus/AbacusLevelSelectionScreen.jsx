@@ -127,8 +127,8 @@ const AbacusLevelSelectionScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1 },
-    container: { flex: 1, marginTop: -30 },
+    safeArea: { flex: 1, marginTop: -31 },
+    container: { flex: 1, marginTop: 0 },
 
     header: {
         alignItems: "center",

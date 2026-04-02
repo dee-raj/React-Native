@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
 import { Ionicons } from '@expo/vector-icons';
+import soundManager from '../../shared/SoundManager';
+import { shareGameResult } from '../../shared/SharingManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_SIZE = 4;
@@ -120,75 +122,87 @@ const Game2048Screen = ({ navigation }) => {
     }, [gameOver, overlayOpacity]);
 
 
-    const move = (direction) => {
+    const move = useCallback((direction) => {
         if (gameOver) return;
 
-        let newGrid = [...grid];
-        let moved = false;
-        let newScore = score;
+        setGrid(prevGrid => {
+            let newGrid = [...prevGrid];
+            let moved = false;
+            let scoreGain = 0;
 
-        const getIndex = (r, c) => r * GRID_SIZE + c;
+            const getIndex = (r, c) => r * GRID_SIZE + c;
 
-        const moveLine = (line) => {
-            let newLine = line.filter(v => v !== null);
-            for (let i = 0; i < newLine.length - 1; i++) {
-                if (newLine[i] === newLine[i + 1]) {
-                    newLine[i] *= 2;
-                    newScore += newLine[i];
-                    newLine.splice(i + 1, 1);
-                    moved = true;
+            const moveLine = (line) => {
+                let newLine = line.filter(v => v !== null);
+                for (let i = 0; i < newLine.length - 1; i++) {
+                    if (newLine[i] === newLine[i + 1]) {
+                        newLine[i] *= 2;
+                        scoreGain += newLine[i];
+                        newLine.splice(i + 1, 1);
+                    }
                 }
-            }
-            while (newLine.length < GRID_SIZE) {
-                newLine.push(null);
-            }
-            return newLine;
-        };
-
-        if (direction === 'LEFT' || direction === 'RIGHT') {
-            for (let r = 0; r < GRID_SIZE; r++) {
-                let line = [];
-                for (let c = 0; c < GRID_SIZE; c++) line.push(newGrid[getIndex(r, c)]);
-                if (direction === 'RIGHT') line.reverse();
-                let movedLine = moveLine(line);
-                if (direction === 'RIGHT') movedLine.reverse();
-                for (let c = 0; c < GRID_SIZE; c++) {
-                    if (newGrid[getIndex(r, c)] !== movedLine[c]) moved = true;
-                    newGrid[getIndex(r, c)] = movedLine[c];
+                while (newLine.length < GRID_SIZE) {
+                    newLine.push(null);
                 }
-            }
-        } else if (direction === 'UP' || direction === 'DOWN') {
-            for (let c = 0; c < GRID_SIZE; c++) {
-                let line = [];
-                for (let r = 0; r < GRID_SIZE; r++) line.push(newGrid[getIndex(r, c)]);
-                if (direction === 'DOWN') line.reverse();
-                let movedLine = moveLine(line);
-                if (direction === 'DOWN') movedLine.reverse();
+                return newLine;
+            };
+
+            if (direction === 'LEFT' || direction === 'RIGHT') {
                 for (let r = 0; r < GRID_SIZE; r++) {
-                    if (newGrid[getIndex(r, c)] !== movedLine[r]) moved = true;
-                    newGrid[getIndex(r, c)] = movedLine[r];
+                    let line = [];
+                    for (let c = 0; c < GRID_SIZE; c++) line.push(newGrid[getIndex(r, c)]);
+                    if (direction === 'RIGHT') line.reverse();
+                    let movedLine = moveLine(line);
+                    if (direction === 'RIGHT') movedLine.reverse();
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        if (newGrid[getIndex(r, c)] !== movedLine[c]) moved = true;
+                        newGrid[getIndex(r, c)] = movedLine[c];
+                    }
+                }
+            } else if (direction === 'UP' || direction === 'DOWN') {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    let line = [];
+                    for (let r = 0; r < GRID_SIZE; r++) line.push(newGrid[getIndex(r, c)]);
+                    if (direction === 'DOWN') line.reverse();
+                    let movedLine = moveLine(line);
+                    if (direction === 'DOWN') movedLine.reverse();
+                    for (let r = 0; r < GRID_SIZE; r++) {
+                        if (newGrid[getIndex(r, c)] !== movedLine[r]) moved = true;
+                        newGrid[getIndex(r, c)] = movedLine[r];
+                    }
                 }
             }
-        }
 
-        if (moved) {
-            newGrid = addRandomTile(newGrid);
-            setGrid(newGrid);
-            setScore(newScore);
+            if (moved) {
+                newGrid = addRandomTile(newGrid);
 
-            if (newScore > highScore) {
-                setHighScore(newScore);
-                saveHighScore(newScore);
+                if (scoreGain > 0) {
+                    soundManager.playMerge();
+                } else {
+                    soundManager.playMove();
+                }
+
+                setScore(prev => {
+                    const newScore = prev + scoreGain;
+                    if (newScore > highScore) {
+                        setHighScore(newScore);
+                        saveHighScore(newScore);
+                    }
+                    return newScore;
+                });
+
+                if (!hasWonRef.current && newGrid.includes(2048)) {
+                    setShowConfetti(true);
+                    hasWonRef.current = true;
+                    soundManager.playWin();
+                }
+
+                checkGameOver(newGrid);
             }
 
-            if (!hasWonRef.current && newGrid.includes(2048)) {
-                setShowConfetti(true);
-                hasWonRef.current = true;
-            }
-
-            checkGameOver(newGrid);
-        }
-    };
+            return moved ? newGrid : prevGrid;
+        });
+    }, [gameOver, highScore, addRandomTile, checkGameOver]);
 
     const checkGameOver = (currentGrid) => {
         if (currentGrid.includes(null)) return;
@@ -258,6 +272,17 @@ const Game2048Screen = ({ navigation }) => {
                         <Text style={styles.hintText}>Try again and beat your record!</Text>
 
                         <Pressable
+                            onPress={() => shareGameResult('2048', score, `Best: ${highScore}`)}
+                            style={({ pressed }) => [
+                                styles.shareBtn,
+                                { transform: [{ scale: pressed ? 0.95 : 1 }] }
+                            ]}
+                        >
+                            <Ionicons name="share-social" size={20} color="#FFF" />
+                            <Text style={styles.shareBtnText}>Share</Text>
+                        </Pressable>
+
+                        <Pressable
                             onPress={initGame}
                             style={({ pressed }) => [
                                 styles.resetBtn,
@@ -285,6 +310,7 @@ const Game2048Screen = ({ navigation }) => {
 const styles = StyleSheet.create({
     header: {
         marginVertical: 20,
+        marginTop: 0,
     },
     topRow: {
         flexDirection: 'row',
@@ -419,6 +445,22 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: '900',
+    },
+    shareBtn: {
+        marginTop: 15,
+        flexDirection: 'row',
+        alignSelf: 'center',
+        backgroundColor: '#667eea',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 25,
+        alignItems: 'center',
+        gap: 8,
+    },
+    shareBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
 
 });

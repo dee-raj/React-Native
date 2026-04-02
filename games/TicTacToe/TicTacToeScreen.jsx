@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Pressable, Animated, Dimensio
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import soundManager from '../../shared/SoundManager';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +42,7 @@ const TicTacToeScreen = ({ navigation }) => {
 
     const handlePress = (index) => {
         if (board[index] || winner || isDraw) return;
+        soundManager.playTap();
 
         Animated.sequence([
             Animated.timing(scaleAnims[index], { toValue: 0.8, duration: 100, useNativeDriver: true }),
@@ -56,19 +58,26 @@ const TicTacToeScreen = ({ navigation }) => {
     };
 
     const resetGame = () => {
+        soundManager.playClick();
         setBoard(Array(9).fill(null));
         setIsXNext(true);
         setShowConfetti(false);
     };
 
     useEffect(() => {
-        if (winner && !showConfetti) setShowConfetti(true);
-    }, [winner, showConfetti]);
+        if (winner && !showConfetti) {
+            setShowConfetti(true);
+            soundManager.playWin();
+        }
+        if (isDraw) {
+            soundManager.playClick();
+        }
+    }, [winner, isDraw, showConfetti]);
 
     const SQUARE_SIZE = BOARD_SIZE / 3;
 
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, marginTop: -20 }}>
             <View style={styles.header}>
                 <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Ionicons name="arrow-back" size={24} color="#2b0202ff" />

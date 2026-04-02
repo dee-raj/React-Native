@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getLevelConfig } from "./AbacusConfig";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import soundManager from '../../shared/SoundManager';
 
 const { width, height } = Dimensions.get("window");
 
@@ -234,7 +235,7 @@ const AbacusGameScreen = ({ route, navigation }) => {
                 opts = generateSubtractionOptions(ans);
             } else if (op === "/") {
                 opts = generateDivisionOptions(num1, num2, ans);
-            } else if (op === "×") {
+            } else if (op === "*") {
                 opts = generateMultiplicationOptions(ans);
             } else {
                 opts = shuffle([ans, ans + 1, ans - 1, ans + 2]);
@@ -268,7 +269,12 @@ const AbacusGameScreen = ({ route, navigation }) => {
         setShowAnswer(true);
         setFeedback(correct ? "correct" : "wrong");
 
-        if (correct) setScore(finalScore);
+        if (correct) {
+            setScore(finalScore);
+            soundManager.playCorrect();
+        } else {
+            soundManager.playWrong();
+        }
 
         feedbackAnim.setValue(0);
         Animated.sequence([
@@ -298,6 +304,7 @@ const AbacusGameScreen = ({ route, navigation }) => {
 
         if (finalScore >= PASS_MARK) {
             setShowConfetti(true);
+            soundManager.playWin();
             try {
                 const saved = await AsyncStorage.getItem(STORAGE_KEY);
                 const parsed = saved ? JSON.parse(saved) : { currentLevel: 1, completed: [] };
@@ -463,10 +470,10 @@ const AbacusGameScreen = ({ route, navigation }) => {
                                     placeholderTextColor={isHardMode ? COLORS.textGrey : "#9CA3AF"}
                                     placeholder="Type ans..."
                                     onChangeText={setInputAnswer}
-                                    onSubmitEditing={() => inputAnswer && handleAnswer(inputAnswer)}
+                                    onSubmitEditing={() => inputAnswer.trim() && handleAnswer(inputAnswer.trim())}
                                 />
                                 <TouchableOpacity
-                                    onPress={() => inputAnswer && handleAnswer(inputAnswer)}
+                                    onPress={() => inputAnswer.trim() && handleAnswer(inputAnswer.trim())}
                                     activeOpacity={0.85}
                                     style={styles.submitBtnWrapper}
                                 >

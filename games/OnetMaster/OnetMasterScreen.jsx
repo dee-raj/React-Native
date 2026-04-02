@@ -5,6 +5,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import soundManager from '../../shared/SoundManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -277,7 +278,11 @@ const OnetMasterScreen = ({ navigation, route }) => {
         return false;
     }, [canConnect]);
 
-    const shuffleGrid = useCallback((gridToShuffle) => {
+    const shuffleGrid = useCallback((gridToShuffle, retryCount = 0) => {
+        if (retryCount >= 10) {
+            Alert.alert("Shuffle Failed", "Could not find valid moves. Please restart the level.");
+            return;
+        }
         const sourceGrid = gridToShuffle || grid;
         const flatTiles = sourceGrid?.flat().filter(t => t !== null);
         flatTiles.sort(() => Math.random() - 0.5);
@@ -298,18 +303,20 @@ const OnetMasterScreen = ({ navigation, route }) => {
         setSelected(null);
 
         if (flatTiles.length > 0 && !findAvailableMoves(newGrid, gridConfig.rows, gridConfig.cols)) {
-            setTimeout(() => shuffleGrid(newGrid), 100);
+            setTimeout(() => shuffleGrid(newGrid, retryCount + 1), 100);
         }
     }, [grid, gridConfig, findAvailableMoves]);
 
     const handlePress = (r, c) => {
         if (!grid[r][c]) return;
+        soundManager.playTap();
 
         if (!selected) {
             setSelected({ r, c });
         } else {
             setAttempts(prev => prev + 1);
             if (canConnect(selected.r, selected.c, r, c, grid, gridConfig.rows, gridConfig.cols)) {
+                soundManager.playConnect();
                 const newGrid = [...grid.map(row => [...row])];
                 newGrid[selected.r][selected.c] = null;
                 newGrid[r][c] = null;
@@ -326,10 +333,12 @@ const OnetMasterScreen = ({ navigation, route }) => {
                     setCompletedLevels(newCompleted);
                     saveProgress(level + 1, newCompleted);
                     setShowConfetti(true);
+                    soundManager.playWin();
                     setTimeout(() => setShowReview(true), 500);
                 } else {
                     if (!findAvailableMoves(newGrid, gridConfig.rows, gridConfig.cols)) {
                         Alert.alert("No more moves!", "Shuffling tiles...");
+                        soundManager.playShuffle();
                         setTimeout(() => shuffleGrid(newGrid), 1000);
                     }
                 }

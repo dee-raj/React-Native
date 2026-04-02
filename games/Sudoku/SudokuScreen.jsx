@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getPuzzle, getDifficultyList, STORAGE_KEY, getTotalLevels } from './SudokuConfig';
+import soundManager from '../../shared/SoundManager';
 
 const { width } = Dimensions.get('window');
 const GRID_PADDING = 20;
@@ -142,6 +143,7 @@ const SudokuScreen = ({ navigation, route }) => {
         for (let r = 0; r < 9; r++) {
             for (let c = 0; c < 9; c++) {
                 if (brd[r][c] === 0) return false;
+                if (solution[r] && brd[r][c] !== solution[r][c]) return false;
             }
         }
         return true;
@@ -169,6 +171,7 @@ const SudokuScreen = ({ navigation, route }) => {
 
     const handleCellPress = (r, c) => {
         if (isInputBlocked) return;
+        soundManager.playTap();
         if (initialBoard[r]?.[c] !== 0) {
             setSelectedCell({ r, c });
             setHighlightNumber(initialBoard[r][c]);
@@ -197,6 +200,7 @@ const SudokuScreen = ({ navigation, route }) => {
             const newMistakes = mistakes + 1;
             setMistakes(newMistakes);
             setLastWrongCell({ r, c, prevVal });
+            soundManager.playError();
 
             if (newMistakes >= maxMistakes) {
                 setGameOver(true);
@@ -209,6 +213,7 @@ const SudokuScreen = ({ navigation, route }) => {
         if (checkWin(newBoard) && errors.size === 0) {
             setGameWon(true);
             setShowConfetti(true);
+            soundManager.playWin();
             clearInterval(timerRef.current);
             saveProgress();
         }
@@ -561,7 +566,7 @@ const SudokuScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1 },
+    safeArea: { flex: 1, marginTop: -31 },
     container: { flex: 1 },
     errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     errorText: { color: '#EF4444', fontSize: 16, fontWeight: '700', textAlign: 'center' },

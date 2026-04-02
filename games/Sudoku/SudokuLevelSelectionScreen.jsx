@@ -242,7 +242,7 @@ const adjustColor = (hex, amount) => {
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1 },
+    safeArea: { flex: 1, marginTop: -31 },
     container: { flex: 1 },
     centered: { justifyContent: 'center', alignItems: 'center' },
     header: {

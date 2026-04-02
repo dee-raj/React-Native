@@ -12,6 +12,7 @@ import * as Speech from 'expo-speech';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import soundManager from '../../shared/SoundManager';
 
 const { width } = Dimensions.get('window');
 
@@ -91,6 +92,7 @@ const ShapeTapGameScreen = ({ navigation }) => {
             speak(message);
             setShowConfetti(true);
             successAnimation();
+            soundManager.playCorrect();
 
             setTimeout(() => {
                 setShowConfetti(false);
@@ -100,6 +102,7 @@ const ShapeTapGameScreen = ({ navigation }) => {
             const message = randomFrom(TRY_AGAIN_SPEECH);
             showTemporaryFeedback(`😊 ${message}`);
             speak(message);
+            soundManager.playWrong();
         }
     };
 
@@ -110,20 +113,19 @@ const ShapeTapGameScreen = ({ navigation }) => {
     }, []);
 
     return (
-        <LinearGradient
-            colors={['#E0F7FA', '#E1F5FE']}
-            style={styles.container}
-        >
-            <View style={styles.header}>
-                <Pressable onPress={() => navigation.goBack()}>
-                    <View style={styles.backBtn}>
-                        <Ionicons name="arrow-back" size={24} color="#321" />
-                        <Text style={styles.backBtnText}> Go Back</Text>
-                    </View>
-                </Pressable>
-            </View>
-
-            <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }}>
+            <LinearGradient
+                colors={['#E0F7FA', '#E1F5FE']}
+                style={styles.container}
+            >
+                <View style={styles.header}>
+                    <Pressable onPress={() => navigation.goBack()}>
+                        <View style={styles.backBtn}>
+                            <Ionicons name="arrow-back" size={24} color="#321" />
+                            <Text style={styles.backBtnText}> Go Back</Text>
+                        </View>
+                    </Pressable>
+                </View>
 
                 {/* Shapes Grid */}
                 <View style={styles.grid}>
@@ -149,13 +151,13 @@ const ShapeTapGameScreen = ({ navigation }) => {
 
                 {/* Confetti */}
                 {showConfetti && <ConfettiCannon count={180} origin={{ x: width / 2, y: 0 }} fadeOut />}
-            </SafeAreaView>
-        </LinearGradient>
+            </LinearGradient>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, marginTop: 32 },
+    container: { flex: 1, marginTop: -31 },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
