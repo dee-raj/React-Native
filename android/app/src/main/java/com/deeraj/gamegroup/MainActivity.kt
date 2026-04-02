@@ -1,4 +1,4 @@
-package com.deeraj.GameGroup
+package com.deeraj.gamegroup
 
 import android.os.Build
 import android.os.Bundle

@@ -1,4 +1,4 @@
-package com.deeraj.GameGroup
+package com.deeraj.gamegroup
 
 import android.app.Application
 import android.content.res.Configuration

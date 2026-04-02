@@ -20,7 +20,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.deeraj.GameGroup",
+      "package": "com.deeraj.gamegroup",
       "versionCode": 3
     },
     "web": {
@@ -35,6 +35,6 @@
       "expo-font",
       "expo-audio"
     ],
-    "owner": "dee-max"
+    "owner": "deeraj"
   }
 }
