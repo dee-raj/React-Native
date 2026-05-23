@@ -5,6 +5,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
 import Card from '../../shared/Card';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const LOG_KEY = '@flow_pipes_levels';
@@ -350,6 +351,7 @@ const FlowGameScreen = ({ navigation, route }) => {
                     setTimeTaken(finalTime);
                     gameWonRef.current = true;
                     soundManager.playWin();
+                    dailyChallengeManager.completeGame('flow');
                     setIsSaving(true);
                     await saveProgress(levelRef.current);
                     if (isMountedRef.current) {

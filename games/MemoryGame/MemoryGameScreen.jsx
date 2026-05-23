@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -280,6 +281,7 @@ const MemoryGameScreen = ({ route, navigation }) => {
                     saveProgress(level + 1, updatedCompleted);
                     setShowConfetti(true);
                     soundManager.playWin();
+                    dailyChallengeManager.completeGame('memory');
                     setTimeout(() => setShowResults(true), 500);
                 }
             } else {

@@ -31,6 +31,62 @@ const KEYBOARD_ROWS = [
     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
     ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE'],
 ];
+const WordleCell = React.memo(({
+    rowIdx,
+    cellIdx,
+    char,
+    isGuessedRow,
+    isAlreadyRevealed,
+    scaleY,
+    colors,
+    isDark,
+    getCellColor,
+    styles
+}) => {
+    const [isRevealed, setIsRevealed] = useState(isAlreadyRevealed);
+
+    useEffect(() => {
+        setIsRevealed(isAlreadyRevealed);
+    }, [isAlreadyRevealed]);
+
+    useEffect(() => {
+        if (isAlreadyRevealed) return;
+
+        const listenerId = scaleY.addListener(({ value }) => {
+            if (value <= 0.05) {
+                setIsRevealed(true);
+            }
+        });
+        return () => {
+            scaleY.removeListener(listenerId);
+        };
+    }, [scaleY, isAlreadyRevealed]);
+
+    const { bg, border, text } = getCellColor(rowIdx, cellIdx, char, isRevealed);
+    const cellStyleAnim = {
+        transform: [
+            { scaleY: scaleY }
+        ]
+    };
+
+    return (
+        <Animated.View
+            style={[
+                styles.cell,
+                {
+                    borderColor: char ? colors.text : border,
+                    backgroundColor: bg,
+                },
+                char && !isGuessedRow && styles.cellFilled,
+                cellStyleAnim
+            ]}
+        >
+            <Text style={[styles.cellText, { color: text }]}>
+                {char.toUpperCase()}
+            </Text>
+        </Animated.View>
+    );
+});
 
 const WordleScreen = ({ navigation, route }) => {
     const isDailyChallengeFromRoute = route.params?.isDaily || false;
@@ -211,14 +267,9 @@ const WordleScreen = ({ navigation, route }) => {
         const rowIdx = guesses.length;
         setIsAnimating(true);
 
-        // Sequence flip colors staggered
+        // Sequence flip sounds staggered (no state updates here to prevent lag)
         for (let j = 0; j < 5; j++) {
             setTimeout(() => {
-                setRevealedCells(prev => {
-                    const next = prev.map(r => [...r]);
-                    next[rowIdx][j] = true;
-                    return next;
-                });
                 soundManager.playClick();
             }, j * 150 + 150);
         }
@@ -242,6 +293,15 @@ const WordleScreen = ({ navigation, route }) => {
         Animated.stagger(150, scaleAnimations).start(async () => {
             // Update keyboard letter highlight styles
             updateKeyboardStatuses(cleanGuess, targetWord);
+
+            // Update revealed cells in parent state once at the end
+            setRevealedCells(prev => {
+                const next = prev.map(r => [...r]);
+                for (let j = 0; j < 5; j++) {
+                    next[rowIdx][j] = true;
+                }
+                return next;
+            });
 
             // Set guesses in state
             setGuesses(newGuesses);
@@ -342,8 +402,8 @@ const WordleScreen = ({ navigation, route }) => {
         shareGameResult('Wordle', gameStatus === 'won' ? `Won in ${attempts} attempts` : 'Lost', additional);
     };
 
-    const getCellColor = (rowIdx, cellIdx, char) => {
-        if (!revealedCells[rowIdx][cellIdx]) {
+    const getCellColor = (rowIdx, cellIdx, char, isRevealed) => {
+        if (!isRevealed) {
             return {
                 bg: 'transparent',
                 border: colors.borderLight,
@@ -403,30 +463,20 @@ const WordleScreen = ({ navigation, route }) => {
             char = currentGuess[cellIdx] || '';
         }
 
-        const { bg, border, text } = getCellColor(rowIdx, cellIdx, char);
-        const cellStyleAnim = {
-            transform: [
-                { scaleY: scaleYAnim[rowIdx][cellIdx] }
-            ]
-        };
-
         return (
-            <Animated.View
+            <WordleCell
                 key={`cell-${rowIdx}-${cellIdx}`}
-                style={[
-                    styles.cell,
-                    {
-                        borderColor: char ? colors.text : border,
-                        backgroundColor: bg,
-                    },
-                    char && !isGuessedRow && styles.cellFilled,
-                    cellStyleAnim
-                ]}
-            >
-                <Text style={[styles.cellText, { color: text }]}>
-                    {char.toUpperCase()}
-                </Text>
-            </Animated.View>
+                rowIdx={rowIdx}
+                cellIdx={cellIdx}
+                char={char}
+                isGuessedRow={isGuessedRow}
+                isAlreadyRevealed={revealedCells[rowIdx][cellIdx]}
+                scaleY={scaleYAnim[rowIdx][cellIdx]}
+                colors={colors}
+                isDark={isDark}
+                getCellColor={getCellColor}
+                styles={styles}
+            />
         );
     };
 

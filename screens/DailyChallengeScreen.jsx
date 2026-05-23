@@ -15,8 +15,9 @@ const DailyChallengeScreen = ({ navigation }) => {
     const [stats, setStats] = useState({ totalCompletions: 0, maxStreak: 0 });
 
     useEffect(() => {
-        loadData();
-    }, []);
+        const unsubscribe = navigation.addListener('focus', loadData);
+        return unsubscribe;
+    }, [navigation]);
 
     const loadData = async () => {
         const gamesWithStatus = await dailyChallengeManager.getAllGamesWithStatus();

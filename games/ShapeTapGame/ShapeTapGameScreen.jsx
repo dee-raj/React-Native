@@ -13,6 +13,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const { width } = Dimensions.get('window');
 
@@ -93,6 +94,7 @@ const ShapeTapGameScreen = ({ navigation }) => {
             setShowConfetti(true);
             successAnimation();
             soundManager.playCorrect();
+            dailyChallengeManager.completeGame('shape-tap');
 
             setTimeout(() => {
                 setShowConfetti(false);

@@ -7,6 +7,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getPuzzle, getDifficultyList, STORAGE_KEY, getTotalLevels } from './SudokuConfig';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const { width } = Dimensions.get('window');
 const GRID_PADDING = 20;
@@ -214,6 +215,7 @@ const SudokuScreen = ({ navigation, route }) => {
             setGameWon(true);
             setShowConfetti(true);
             soundManager.playWin();
+            dailyChallengeManager.completeGame('sudoku');
             clearInterval(timerRef.current);
             saveProgress();
         }

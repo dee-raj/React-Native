@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -334,6 +335,7 @@ const OnetMasterScreen = ({ navigation, route }) => {
                     saveProgress(level + 1, newCompleted);
                     setShowConfetti(true);
                     soundManager.playWin();
+                    dailyChallengeManager.completeGame('onet');
                     setTimeout(() => setShowReview(true), 500);
                 } else {
                     if (!findAvailableMoves(newGrid, gridConfig.rows, gridConfig.cols)) {

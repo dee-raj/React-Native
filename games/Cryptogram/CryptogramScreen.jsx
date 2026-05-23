@@ -7,6 +7,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getLevelData, STORAGE_KEY, getDifficultyList } from './CryptogramConfig';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const { width } = Dimensions.get('window');
 const CELL_SIZE = Math.min(24, (width - 60) / 10);
@@ -135,6 +136,7 @@ const CryptogramScreen = ({ navigation, route }) => {
             setGameWon(true);
             setShowConfetti(true);
             soundManager.playWin();
+            dailyChallengeManager.completeGame('cryptogram');
             clearInterval(timerRef.current);
             saveProgress();
         }

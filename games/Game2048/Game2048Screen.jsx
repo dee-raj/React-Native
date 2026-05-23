@@ -5,6 +5,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { globalstyles } from '../../style/GlobalStyle';
 import { Ionicons } from '@expo/vector-icons';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 import { shareGameResult } from '../../shared/SharingManager';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -195,6 +196,7 @@ const Game2048Screen = ({ navigation }) => {
                     setShowConfetti(true);
                     hasWonRef.current = true;
                     soundManager.playWin();
+                    dailyChallengeManager.completeGame('2048');
                 }
 
                 checkGameOver(newGrid);
@@ -215,6 +217,7 @@ const Game2048Screen = ({ navigation }) => {
             }
         }
         setGameOver(true);
+        dailyChallengeManager.completeGame('2048');
     };
 
     const panResponder = PanResponder.create({

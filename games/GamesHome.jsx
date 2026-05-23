@@ -75,29 +75,25 @@ const GAMES = [
     {
         name: 'Shape Tap',
         route: 'ShapeTap',
-        icon: 'shapes',
-        family: 'FontAwesome6',
+        image: require('../assets/games/shape-tap.png'),
         category: 'Learning',
     },
     {
         name: 'Sudoku',
         route: 'SudokuLevelSelection',
-        icon: 'table-cells',
-        family: 'FontAwesome6',
+        image: require('../assets/games/sudoku.png'),
         category: 'Puzzles',
     },
     {
         name: 'Cryptogram',
         route: 'CryptogramLevelSelection',
-        icon: 'key',
-        family: 'FontAwesome6',
+        image: require('../assets/games/cryptogram.png'),
         category: 'Puzzles',
     },
     {
         name: 'Wordle',
         route: 'Wordle',
-        icon: 'spell-check',
-        family: 'FontAwesome6',
+        image: require('../assets/games/wordle.png'),
         category: 'Puzzles',
     },
 ];

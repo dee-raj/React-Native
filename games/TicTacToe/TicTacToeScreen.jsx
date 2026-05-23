@@ -4,6 +4,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const { width, height } = Dimensions.get('window');
 
@@ -68,6 +69,7 @@ const TicTacToeScreen = ({ navigation }) => {
         if (winner && !showConfetti) {
             setShowConfetti(true);
             soundManager.playWin();
+            dailyChallengeManager.completeGame('tic-tac-toe');
         }
         if (isDraw) {
             soundManager.playClick();

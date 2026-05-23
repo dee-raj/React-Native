@@ -18,6 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getLevelConfig } from "./AbacusConfig";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import soundManager from '../../shared/SoundManager';
+import dailyChallengeManager from '../../shared/DailyChallengeManager';
 
 const { width, height } = Dimensions.get("window");
 
@@ -305,6 +306,7 @@ const AbacusGameScreen = ({ route, navigation }) => {
         if (finalScore >= PASS_MARK) {
             setShowConfetti(true);
             soundManager.playWin();
+            dailyChallengeManager.completeGame('abacus');
             try {
                 const saved = await AsyncStorage.getItem(STORAGE_KEY);
                 const parsed = saved ? JSON.parse(saved) : { currentLevel: 1, completed: [] };
