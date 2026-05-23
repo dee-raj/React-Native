@@ -20,6 +20,7 @@ import SudokuScreen from '../games/Sudoku/SudokuScreen';
 import SudokuLevelSelectionScreen from '../games/Sudoku/SudokuLevelSelectionScreen';
 import CryptogramLevelSelectionScreen from '../games/Cryptogram/CryptogramLevelSelectionScreen';
 import CryptogramScreen from '../games/Cryptogram/CryptogramScreen';
+import WordleScreen from '../games/Wordle/WordleScreen';
 import DailyChallengeScreen from '../screens/DailyChallengeScreen';
 
 
@@ -141,6 +142,11 @@ const GameStack = () => {
                 name="CryptogramGame"
                 component={CryptogramScreen}
                 options={{ title: 'Cryptogram', headerShown: false }}
+            />
+            <Stack.Screen
+                name="Wordle"
+                component={WordleScreen}
+                options={{ title: 'Wordle', headerShown: false }}
             />
             <Stack.Screen
                 name="DailyChallenge"

@@ -93,6 +93,15 @@ const GAMES_CONFIG = {
         color: '#01FF70',
         description: 'Tap the shapes',
     },
+    'wordle': {
+        key: 'wordle',
+        name: 'Wordle',
+        route: 'Wordle',
+        icon: 'text-outline',
+        iconFamily: 'Ionicons',
+        color: '#10B981',
+        description: 'Guess the 5-letter word',
+    },
 };
 
 class DailyChallengeManager {

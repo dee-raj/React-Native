@@ -93,6 +93,13 @@ const GAMES = [
         family: 'FontAwesome6',
         category: 'Puzzles',
     },
+    {
+        name: 'Wordle',
+        route: 'Wordle',
+        icon: 'spell-check',
+        family: 'FontAwesome6',
+        category: 'Puzzles',
+    },
 ];
 
 const GamesHome = ({ navigation }) => {
