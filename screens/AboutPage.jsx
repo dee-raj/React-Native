@@ -7,13 +7,13 @@ import { Spacing, Typography, BorderRadius, Shadows } from '../theme/Theme';
 import ActionButton from '../shared/ActionButton';
 import { shareApp } from '../shared/SharingManager';
 
-const APP_VERSION = '1.1.1';
-const BUILD_NUMBER = '3';
+const APP_VERSION = '1.2.0';
+const BUILD_NUMBER = '4';
 
 const games = [
     'Tic Tac Toe', 'Memory Match', '2048', 'Onet Master',
-    'Sliding Puzzle', 'Flow Pipes', 'Abacus Math',
-    'Speak & Learn', 'Shape Tap', 'Sudoku', 'Cryptogram'
+    'Sliding Puzzle', 'Flow Pipes', 'Abacus Math', 'Sudoku', 'Wordle',
+    'Speak & Learn', 'Shape Tap', 'Cryptogram'
 ];
 
 const libraries = [
@@ -64,7 +64,7 @@ const AboutPage = ({ navigation }) => {
                 </View>
 
                 {/* Developer Section */}
-                <View style={[styles.card, { backgroundColor: colors.surface }]}>
+                {/* <View style={[styles.card, { backgroundColor: colors.surface }]}>
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>👨‍💻 Developer</Text>
 
                     <View style={styles.developerInfo}>
@@ -103,7 +103,7 @@ const AboutPage = ({ navigation }) => {
                             <Text style={[styles.socialText, { color: colors.text }]}>Email</Text>
                         </Pressable>
                     </View>
-                </View>
+                </View> */}
 
                 {/* Games Section */}
                 <View style={[styles.card, { backgroundColor: colors.surface }]}>
@@ -121,7 +121,7 @@ const AboutPage = ({ navigation }) => {
                 </View>
 
                 {/* References Section */}
-                <View style={[styles.card, { backgroundColor: colors.surface }]}>
+                {/* <View style={[styles.card, { backgroundColor: colors.surface }]}>
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>📚 References</Text>
                     <Text style={[styles.refDescription, { color: colors.textSecondary }]}>
                         Built with these amazing libraries:
@@ -135,7 +135,7 @@ const AboutPage = ({ navigation }) => {
                             <Text style={[styles.libDesc, { color: colors.textSecondary }]}>{lib.description}</Text>
                         </View>
                     ))}
-                </View>
+                </View> */}
 
                 {/* Share Section */}
                 <View style={[styles.card, { backgroundColor: colors.surface }]}>

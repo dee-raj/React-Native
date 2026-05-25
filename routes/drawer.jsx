@@ -39,7 +39,7 @@ function CustomDrawerContent(props) {
             </DrawerContentScrollView>
             <View style={[styles.drawerFooter, { borderTopColor: colors.border }]}>
                 <Text style={[styles.drawerFooterText, { color: colors.textTertiary }]}>
-                    v1.1.1
+                    v1.2.0
                 </Text>
             </View>
         </LinearGradient>

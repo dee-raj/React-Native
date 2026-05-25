@@ -2,7 +2,7 @@
   "expo": {
     "name": "GameGroup",
     "slug": "game-group",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -31,10 +31,7 @@
         "projectId": "11a5332a-449f-4f25-9553-0ffd81aee634"
       }
     },
-    "plugins": [
-      "expo-font",
-      "expo-audio"
-    ],
+    "plugins": [],
     "owner": "deeraj"
   }
 }

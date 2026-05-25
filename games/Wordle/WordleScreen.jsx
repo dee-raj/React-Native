@@ -8,6 +8,7 @@ import {
     Animated,
     Modal,
     ScrollView,
+    PanResponder,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,6 +23,8 @@ import { five_char_words } from './words';
 import dailyChallengeManager from '../../shared/DailyChallengeManager';
 import { shareGameResult } from '../../shared/SharingManager';
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 const { width } = Dimensions.get('window');
 const CELL_SIZE = Math.min(54, (width - 70) / 5);
 const STATS_KEY = '@wordle_game_stats';
@@ -149,6 +152,73 @@ const WordleScreen = ({ navigation, route }) => {
             console.error('Failed to load Wordle stats', e);
         }
     };
+
+    const BUTTON_SIZE = 52;
+
+    const MIN_X = 0;
+    const MAX_X = SCREEN_WIDTH - BUTTON_SIZE;
+
+    const MIN_Y = 0;
+    const MAX_Y = SCREEN_HEIGHT - BUTTON_SIZE;
+
+    const pan = useRef(
+        new Animated.ValueXY({
+            x: SCREEN_WIDTH - 80,
+            y: 150,
+        })
+    ).current;
+
+    const lastPosition = useRef({
+        x: SCREEN_WIDTH - 80,
+        y: 150,
+    }).current;
+
+    const panResponder = useRef(
+        PanResponder.create({
+            // Only activate drag after slight movement
+            onMoveShouldSetPanResponder: (_, gestureState) => {
+                return (
+                    Math.abs(gestureState.dx) > 5 ||
+                    Math.abs(gestureState.dy) > 5
+                );
+            },
+
+            onPanResponderGrant: () => {
+                pan.setOffset({
+                    x: lastPosition.x,
+                    y: lastPosition.y,
+                });
+
+                pan.setValue({ x: 0, y: 0 });
+            },
+
+            onPanResponderMove: (_, gesture) => {
+                let newX = lastPosition.x + gesture.dx;
+                let newY = lastPosition.y + gesture.dy;
+
+                newX = Math.max(MIN_X, Math.min(newX, MAX_X));
+                newY = Math.max(MIN_Y, Math.min(newY, MAX_Y));
+
+                pan.setValue({
+                    x: newX - lastPosition.x,
+                    y: newY - lastPosition.y,
+                });
+            },
+
+            onPanResponderRelease: (_, gesture) => {
+                let finalX = lastPosition.x + gesture.dx;
+                let finalY = lastPosition.y + gesture.dy;
+
+                finalX = Math.max(MIN_X, Math.min(finalX, MAX_X));
+                finalY = Math.max(MIN_Y, Math.min(finalY, MAX_Y));
+
+                lastPosition.x = finalX;
+                lastPosition.y = finalY;
+
+                pan.flattenOffset();
+            },
+        })
+    ).current;
 
     const saveStats = async (newStats) => {
         try {
@@ -587,16 +657,41 @@ const WordleScreen = ({ navigation, route }) => {
                     ))}
                 </View>
 
-                {/* Stats Screen Button */}
-                <Pressable
-                    style={styles.floatingStatsBtn}
-                    onPress={() => {
-                        setShowStatsModal(true);
-                        Animated.timing(modalFadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
-                    }}
+                {/* Draggable Stats Screen Button */}
+                <Animated.View
+                    {...panResponder.panHandlers}
+                    style={[
+                        styles.floatingStatsBtn,
+                        {
+                            left: 0,
+                            top: 0,
+                            transform: [
+                                { translateX: pan.x },
+                                { translateY: pan.y },
+                            ],
+                        },
+                    ]}
                 >
-                    <Ionicons name="bar-chart-outline" size={24} color="#FFF" />
-                </Pressable>
+                    <Pressable
+                        onPress={() => {
+                            setShowStatsModal(true);
+
+                            Animated.timing(modalFadeAnim, {
+                                toValue: 1,
+                                duration: 300,
+                                useNativeDriver: true,
+                            }).start();
+                        }}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Ionicons name="bar-chart-outline" size={24} color="#FFF" />
+                    </Pressable>
+                </Animated.View>
 
                 {/* Stats / Game Ended Modal */}
                 <Modal visible={showStatsModal} transparent animationType="fade">
@@ -867,8 +962,6 @@ const styles = StyleSheet.create({
     },
     floatingStatsBtn: {
         position: 'absolute',
-        bottom: 250,
-        right: 16,
         width: 52,
         height: 52,
         borderRadius: 26,
