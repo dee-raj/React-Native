@@ -22,7 +22,10 @@
         "projectId": "11a5332a-449f-4f25-9553-0ffd81aee634"
       }
     },
-    "plugins": [],
+    "plugins": [
+      "expo-audio",
+      "expo-sharing"
+    ],
     "owner": "deeraj"
   }
 }

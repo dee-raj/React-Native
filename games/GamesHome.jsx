@@ -96,6 +96,12 @@ const GAMES = [
         image: require('../assets/games/wordle.png'),
         category: 'Puzzles',
     },
+    {
+        name: 'Chess Clock',
+        route: 'ChessClock',
+        image: require('../assets/games/chess-clock.png'),
+        category: 'Tools',
+    },
 ];
 
 const GamesHome = ({ navigation }) => {
@@ -160,7 +166,7 @@ const GamesHome = ({ navigation }) => {
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
             <FlatList
-                data={GAMES}
+                data={GAMES.reverse()}
                 renderItem={renderGameItem}
                 keyExtractor={(item) => item.route}
                 numColumns={3}

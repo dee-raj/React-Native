@@ -21,6 +21,8 @@ import SudokuLevelSelectionScreen from '../games/Sudoku/SudokuLevelSelectionScre
 import CryptogramLevelSelectionScreen from '../games/Cryptogram/CryptogramLevelSelectionScreen';
 import CryptogramScreen from '../games/Cryptogram/CryptogramScreen';
 import WordleScreen from '../games/Wordle/WordleScreen';
+import ChessClockScreen from '../games/ChessClock/ChessClockScreen';
+import ChessClockGameScreen from '../games/ChessClock/ChessClockGameScreen';
 import DailyChallengeScreen from '../screens/DailyChallengeScreen';
 
 
@@ -147,6 +149,16 @@ const GameStack = () => {
                 name="Wordle"
                 component={WordleScreen}
                 options={{ title: 'Wordle', headerShown: false }}
+            />
+            <Stack.Screen
+                name="ChessClock"
+                component={ChessClockScreen}
+                options={{ title: 'Chess Clock', headerShown: false }}
+            />
+            <Stack.Screen
+                name="ChessClockGame"
+                component={ChessClockGameScreen}
+                options={{ title: 'Chess Clock', headerShown: false }}
             />
             <Stack.Screen
                 name="DailyChallenge"
